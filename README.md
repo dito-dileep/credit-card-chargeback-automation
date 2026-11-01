@@ -2,12 +2,11 @@
 
 **Domain:** Banking & Financial Services  
 **Source idea number:** 3  
-**Team size:** 3 students
+**Team size:** 2 students
 
 ## Team members
-- Student 1:
-- Student 2:
-- Student 3:
+- Student 1:DITO DILEEP (RA2411026010050)
+- Student 2:ADITHYA R NATH (RA2411026010003)
 
 ## Project overview
 Add the approved project scope, workflow description, and expected outcome here.
