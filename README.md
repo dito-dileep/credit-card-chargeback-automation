@@ -1,10 +1,20 @@
 # Multi-Transaction Credit Card Chargeback Dispute Automation
 
+<<<<<<< HEAD
 <p align="center">
   <img src="frontend-react/src/assets/chargeback-hero.png" alt="Chargeback dashboard visual" width="100%" />
 </p>
 
 <p align="center"><strong>A premium Camunda 8 workflow demonstration for secure, multi-line credit-card disputes.</strong></p>
+=======
+**Domain:** Banking & Financial Services  
+**Source idea number:** 3  
+**Team size:** 2 students
+
+## Team members
+- Student 1:DITO DILEEP (RA2411026010050)
+- Student 2:ADITHYA R NATH (RA2411026010003)
+>>>>>>> origin/main
 
 A customer selects multiple statement lines, supplies a reason, and creates one secure case while Camunda 8 evaluates each transaction independently. The system is intentionally built with mock banking data only.
 
