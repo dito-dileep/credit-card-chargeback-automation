@@ -1,0 +1,7 @@
+package com.capitalone.chargeback;
+
+import org.springframework.web.bind.annotation.*;import java.util.*;
+@RestController @RequestMapping("/api") @CrossOrigin class ApiController { final DisputeService service;final TransactionRepository transactions;final DisputeRepository disputes; ApiController(DisputeService s,TransactionRepository t,DisputeRepository d){service=s;transactions=t;disputes=d;}
+ @GetMapping("/transactions") List<CardTransaction> transactions(){return transactions.findAll();}@GetMapping("/transactions/{id}") CardTransaction transaction(@PathVariable String id){return transactions.findById(id).orElseThrow();}
+ @PostMapping("/disputes") DisputeCase create(@RequestBody CreateDisputeRequest r){return service.create(r);}@GetMapping("/disputes") List<DisputeCase> list(){return service.all();}@GetMapping("/disputes/{id}") DisputeCase get(@PathVariable String id){return service.one(id);}@GetMapping("/disputes/{id}/transactions") List<DisputeItem> items(@PathVariable String id){return service.one(id).items;}@GetMapping("/refunds/{id}") DisputeItem refund(@PathVariable String id){return disputes.findAll().stream().flatMap(c->c.items.stream()).filter(i->i.id.equals(id)).findFirst().orElseThrow();}@GetMapping("/dashboard/summary") DashboardSummary summary(){return service.summary();}
+ @ExceptionHandler({IllegalArgumentException.class,NoSuchElementException.class}) @ResponseStatus(org.springframework.http.HttpStatus.BAD_REQUEST) Map<String,String> error(Exception e){return Map.of("error",e.getMessage());}}

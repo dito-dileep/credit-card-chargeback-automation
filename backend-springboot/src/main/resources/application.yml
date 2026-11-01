@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/chargeback}
+    username: ${SPRING_DATASOURCE_USERNAME:chargeback}
+    password: ${SPRING_DATASOURCE_PASSWORD:change-me}
+  jpa:
+    hibernate.ddl-auto: update
+    open-in-view: false
+  jackson.serialization.write-dates-as-timestamps: false
+camunda:
+  client:
+    mode: ${CAMUNDA_MODE:self-managed}
+    rest-address: ${CAMUNDA_CLIENT_REST_ADDRESS:http://localhost:8088}
+app:
+  workflow-enabled: ${APP_WORKFLOW_ENABLED:false}
+  high-value-threshold: ${HIGH_VALUE_THRESHOLD:4000}
+  merchant-timeout: ${DEMO_TIMEOUT:P3D}
+  slack-webhook-url: ${SLACK_WEBHOOK_URL:}
