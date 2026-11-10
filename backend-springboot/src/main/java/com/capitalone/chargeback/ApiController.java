@@ -96,4 +96,10 @@ class ApiController {
     Map<String, String> error(Exception exception) {
         return Map.of("error", exception.getMessage());
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    Map<String, String> workflowUnavailable(IllegalStateException exception) {
+        return Map.of("error", exception.getMessage());
+    }
 }

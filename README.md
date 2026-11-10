@@ -1,102 +1,235 @@
-# Multi-Transaction Credit Card Chargeback Dispute Automation
+<div align="center">
 
-**Domain:** Banking and Financial Services
+# MULTI-TRANSACTION
+# CHARGEBACK AUTOMATION
 
-**Project idea:** 3, inspired by Capital One  
-**Team:** DITO DILEEP (RA2411026010050) and ADITHYA R NATH (RA2411026010003)
+### One claim. Every transaction. A clear path to resolution.
 
-A customer selects multiple statement lines in a React application and submits one dispute case. Spring Boot validates and persists the case, then starts a Camunda 8 process. A parallel multi-instance subprocess evaluates each line independently, retrieves transaction metadata through the Camunda REST Connector, checks eligibility, opens a merchant-response window, and calls a reusable ledger-reversal process only for approved items.
+<strong>Camunda 8 · Spring Boot · React · PostgreSQL</strong>
 
-All records and reversals are mock data. Do not use real cardholder or payment information.
+<br />
 
-## Technology
+Banking and Financial Services · Project Idea 3 · Academic demonstration
 
-- React and Vite frontend.
-- Java 21 and Spring Boot REST API.
-- PostgreSQL for application persistence; H2 for automated tests.
-- Camunda 8 Zeebe, BPMN 2.0, FEEL, and the outbound REST Connector.
-- Dockerfiles and Docker Compose for the application and database.
+</div>
 
-## Core capabilities
+---
 
-| Capability | Implementation |
+> A customer can select multiple questionable statement lines and raise one dispute. Camunda coordinates independent transaction evaluation, merchant representment, a response deadline, fraud alerts, and ledger reversals for approved items.
+>
+> **Safety:** This project uses simulated records and does not process real cardholder, payment, or banking data.
+
+## At a glance
+
+| Area | What is implemented |
 |---|---|
-| Multi-transaction claims | Submit several statement lines in one dispute case. |
-| Parallel evaluation | Process each line independently with a BPMN multi-instance subprocess. |
-| Merchant representment | Wait for a correlated merchant response, with an interrupting three-day timer. |
-| Ledger reversal | Invoke the reusable child process only for approved items. |
-| Transaction metadata | Use the native Camunda HTTP JSON REST Connector (`R` marker), not an ordinary worker task. |
-| Fraud monitoring | Alert on high-value items through a second REST Connector task. |
-| Case tracking | Display item decisions and pending merchant actions in the React dashboard and Tasklist. |
+| Customer portal | React statement selection, multi-line claims, tracking, Tasklist, and fraud desk |
+| Application API | Spring Boot REST endpoints with JSON responses and explicit HTTP statuses |
+| Persistence | PostgreSQL for the application; H2 for automated tests |
+| Workflow | Camunda 8 process with parallel multi-instance transaction evaluation |
+| Integrations | Camunda HTTP JSON REST Connector for transaction metadata and fraud alerts |
+| Human response | Correlated merchant response message and interrupting three-day timer |
+| Recovery | BPMN error boundaries and a reusable ledger-reversal Call Activity |
+| Packaging | Backend/frontend Dockerfiles and a root Docker Compose stack |
 
-## Architecture
+## Screens and workflow
 
-`React → Spring Boot REST API → PostgreSQL`
+The portal has four focused views: **Statement**, **Tracking**, **Tasklist**, and **Fraud desk**. It uses a dark, high-contrast interface with luminous accent colors, responsive layouts, subtle motion, and reduced-motion support.
 
-`Spring Boot → Camunda 8 → parallel transaction subprocess → REST metadata/fraud APIs → merchant response → ledger-reversal Call Activity`
+```mermaid
+flowchart LR
+    Browser[React portal] -->|HTTP + JSON| API[Spring Boot REST API]
+    API --> DB[(PostgreSQL)]
+    API -->|Start case and publish merchant reply| Zeebe[Camunda 8 / Zeebe]
+    Zeebe -->|Typed job workers| API
+    Zeebe -->|HTTP JSON REST Connector| Connector[Connector runtime]
+    Connector -->|Transaction metadata and fraud alert| API
+    API -->|Optional configured webhook| Slack[Slack]
+```
 
-The React Tasklist displays items waiting for merchant responses and sends them to the backend for message correlation. Case status and item decisions are persisted and refreshed by the dashboard.
+```mermaid
+flowchart TD
+    Start([Dispute submitted]) --> Validate[Validate request]
+    Validate --> Items[[Parallel multi-instance: each transaction]]
+    Items --> Metadata[REST Connector: fetch metadata]
+    Metadata --> Value{High value?}
+    Value -->|true| Alert[REST Connector: record fraud alert]
+    Value -->|false| Eligible{Eligible?}
+    Alert --> Eligible
+    Eligible -->|false| Reject[Record rejection]
+    Eligible -->|true| Merchant[Merchant Representment Window]
+    Merchant --> Reply[Correlated merchant response]
+    Merchant -. 3-day interrupting timer .-> Timeout[Record timeout]
+    Reply --> Approved{Approved?}
+    Approved -->|true| Ledger[Call Activity: ledger reversal]
+    Approved -->|false| End([Complete item])
+    Ledger --> End
+    Reject --> End
+    Timeout --> End
+```
 
-## BPMN decisions and FEEL expressions
+Transaction lines are evaluated in parallel because their metadata, eligibility, and merchant decisions are independent. There is no ordering dependency between a customer's selected statement lines. The main BPMN model uses explicit boolean conditions on every exclusive-gateway branch.
 
-| Decision or mapping | FEEL expression | Outcome |
+## BPMN and decision dictionary
+
+| Element | FEEL / mapping | Behavior |
 |---|---|---|
-| Parallel item collection | `=transactions` | One isolated iteration for each disputed line |
-| High-value route | `=highValue = true` | Send a fraud alert through the REST Connector |
-| Non-high-value route | `=highValue = false` | Continue directly to eligibility |
-| Eligible route | `=eligible = true` | Wait for merchant response |
-| Ineligible route | `=eligible = false` | Mark the item rejected; do not call the ledger process |
-| Approved route | `=approved = true` | Invoke `core-banking-ledger-reversal` |
-| Rejected or timed-out route | `=approved = false` | End the item without a refund |
-| Metadata URL | `=transactionApiBaseUrl + "/api/transactions/" + transaction.transactionId` | Fetch the selected transaction from the Spring REST API |
-| Merchant timer | `=duration(merchantTimeout)` | Expire the response wait after the configured ISO-8601 duration |
-| Ledger call inputs | `=caseId`, `=transaction.itemId`, `=transaction.transactionId` | Explicitly scope identifiers into the child process |
+| Multi-instance collection | `=transactions` | Creates one parallel token per submitted dispute line |
+| High-value route | `=highValue = true` | Sends the item through the fraud-alert REST Connector |
+| Standard-value route | `=highValue = false` | Continues to eligibility evaluation |
+| Eligible route | `=eligible = true` | Enters the merchant-response subprocess |
+| Ineligible route | `=eligible = false` | Records a rejection and skips ledger reversal |
+| Approved route | `=approved = true` | Calls `core-banking-ledger-reversal` |
+| Rejected route | `=approved = false` | Ends the item without a refund |
+| Metadata URL | `=transactionApiBaseUrl + "/api/transactions/" + transaction.transactionId` | Fetches metadata for the active multi-instance item |
+| Merchant timer | `=duration(merchantTimeout)` | Interrupts the response wait when the configured duration expires |
+| Ledger call inputs | `=caseId`, `=transaction.itemId`, `=transaction.transactionId` | Scopes identifiers into the child process |
 
-Every outgoing flow from a decision gateway has a boolean condition. Invalid requests, metadata evaluation errors, and ledger reversal business errors have BPMN error paths. The merchant response wait has an interrupting timer boundary event.
+The metadata and fraud tasks use the Camunda HTTP JSON REST Connector template `io.camunda.connectors.HttpJson.v2` (version 11), with task type `io.camunda:http-json:1` and modeler connector markers. The fraud connector records an alert through the application API. If `SLACK_WEBHOOK_URL` is configured, the backend optionally forwards that alert to Slack; the webhook is not a second native Camunda connector.
 
-The REST tasks use the official Camunda REST Connector template (`io.camunda.connectors.HttpJson.v2`, version 11) and worker type `io.camunda:http-json:1`. The modeler template adds the connector marker/icon; these are outbound REST Connector tasks, not ordinary application job workers. The backend fraud endpoint records each qualifying alert and optionally forwards it to Slack when `SLACK_WEBHOOK_URL` is configured.
+Business errors use `ZeebeBpmnError` and BPMN error boundaries for invalid requests, metadata evaluation, and ledger reversal. A boundary timer handles merchant timeout. The `P3D` response deadline can be shortened for demonstrations.
 
-## Run with Docker
+## REST API: request and response
 
-1. Copy `.env.example` to `.env` and set a local PostgreSQL password.
-2. Start the application and database with `docker compose up --build`.
-3. Open `http://localhost:5173`; the Spring API is available at `http://localhost:8080`.
-4. Workflow execution is disabled by default. To enable it, deploy both BPMN files from `bpmn-models/` to a reachable Camunda 8 cluster, configure the Camunda REST and Zeebe gRPC addresses, and run a compatible Connector runtime that includes the HTTP JSON Connector. Then set `APP_WORKFLOW_ENABLED=true`.
-5. In Docker Compose, the connector runtime must be able to reach the backend at `http://backend:8080`. Set `TRANSACTION_API_BASE_URL` to the backend address visible from that runtime.
-6. To use Slack alerts, set `SLACK_WEBHOOK_URL`; no webhook or other credential is committed to this repository.
+All successful endpoints return JSON where a response body is defined. The key integration contracts are:
 
-For local development, start PostgreSQL, run `mvn spring-boot:run` from `backend-springboot`, and run `npm ci && npm run dev` from `frontend-react`. Set `TRANSACTION_API_BASE_URL=http://localhost:8080` for a Connector runtime running on the host. Set `DEMO_TIMEOUT=PT30S` for a short classroom timer; the default is `P3D`.
+| Request | Successful response |
+|---|---|
+| `GET /api/transactions/{id}` | `200 OK` with transaction metadata JSON; consumed by the metadata connector |
+| `POST /api/disputes` | `201 Created`, `Location: /api/disputes/{id}`, and the created case JSON |
+| `POST /api/fraud/alerts` | `202 Accepted` and a JSON body containing `recorded` and `slackNotificationStatus` |
+| `POST /api/disputes/{caseId}/transactions/{itemId}/merchant-response` | `202 Accepted` and `{"status":"correlated"}` after Camunda accepts the message |
+| Invalid request or missing record | `400 Bad Request` with an `error` field |
+| Workflow action without an available Camunda client | `503 Service Unavailable` with an `error` field |
 
-## REST API
+Example multi-line request:
 
-The full endpoint catalog, example payloads, and response fields are in [the API reference](docs/api-documentation.md).
+```json
+{
+  "customerId": "customer-001",
+  "items": [
+    { "transactionId": "txn-amazon", "reason": "FRAUD" },
+    { "transactionId": "txn-flipkart", "reason": "DUPLICATE" }
+  ]
+}
+```
+
+Example accepted fraud-alert response:
+
+```json
+{
+  "recorded": true,
+  "slackNotificationStatus": "NOT_CONFIGURED"
+}
+```
+
+Allowed dispute reasons: `FRAUD`, `MERCHANDISE_NOT_RECEIVED`, and `DUPLICATE`.
 
 | Method | Route | Purpose |
 |---|---|---|
-| GET | `/api/transactions` | List statement lines |
-| GET | `/api/transactions/{id}` | Return transaction metadata for the BPMN REST Connector |
-| POST | `/api/disputes` | Create one dispute from multiple transaction lines |
-| GET | `/api/disputes` | List cases and item decisions |
-| GET | `/api/disputes/{id}` | Retrieve a case |
-| GET | `/api/disputes/{id}/transactions` | Retrieve item-level workflow results |
-| GET | `/api/tasklist` | List items awaiting merchant responses |
-| POST | `/api/disputes/{caseId}/transactions/{itemId}/merchant-response` | Correlate a merchant decision to the process |
-| POST | `/api/fraud/alerts` | Persist a high-value alert and optionally forward it to Slack |
-| GET | `/api/refunds/{itemId}` | Retrieve an item refund result |
-| GET | `/api/dashboard/summary` | Return dashboard counts |
+| `GET` | `/api/transactions` | List statement lines |
+| `GET` | `/api/transactions/{id}` | Return transaction metadata for the REST Connector |
+| `POST` | `/api/disputes` | Create one dispute for multiple lines |
+| `GET` | `/api/disputes` | List cases and item results |
+| `GET` | `/api/disputes/{id}` | Retrieve a case |
+| `GET` | `/api/disputes/{id}/transactions` | Retrieve line-level decisions and refund results |
+| `GET` | `/api/tasklist` | List items awaiting merchant responses |
+| `POST` | `/api/disputes/{caseId}/transactions/{itemId}/merchant-response` | Publish a correlated response |
+| `POST` | `/api/fraud/alerts` | Validate and record a high-value alert |
+| `GET` | `/api/refunds/{itemId}` | Retrieve a line's refund result |
+| `GET` | `/api/dashboard/summary` | Return dashboard counts |
 
-## Demonstration data
+Full payloads and endpoint details are in [the API reference](docs/api-documentation.md).
 
-The backend seeds simulated transactions to demonstrate the principal paths:
+## Run locally
 
-| Transaction | Amount | Scenario |
-|---|---:|---|
-| Amazon India | ₹2,000 | Eligible dispute, below high-value threshold |
-| Subscription Streaming | ₹499 | Ineligible transaction |
-| NoReply Electronics | ₹1,200 | Merchant response timeout |
-| Flipkart | ₹5,000 | High-value fraud alert |
+### Prerequisites
 
-These are mock records; the project does not process real cardholder or payment data.
+- Java 21 and Maven
+- Node.js and npm
+- Docker Desktop for the PostgreSQL Compose setup
+- A reachable Camunda 8 cluster and HTTP JSON Connector runtime to execute BPMN workflows
+
+### Application and database
+
+1. Copy `.env.example` to `.env`; choose a local PostgreSQL password.
+2. From the repository root, run `docker compose up --build`.
+3. Open the portal at `http://localhost:5173`; the API listens on `http://localhost:8080`.
+
+The Compose stack starts PostgreSQL, the API, and the static frontend. It does **not** bundle a Camunda engine or Connector runtime. Workflow execution is disabled by default; the UI and API can be explored without claiming live workflow execution.
+
+### Enable Camunda workflows
+
+1. Deploy both BPMN files from `bpmn-models/` to a compatible Camunda 8 cluster.
+2. Configure the Spring Boot Camunda REST and Zeebe gRPC addresses.
+3. Run a compatible HTTP JSON Connector runtime that can reach the backend.
+4. Set `APP_WORKFLOW_ENABLED=true`.
+5. Set `TRANSACTION_API_BASE_URL` to the backend URL as seen from the connector runtime (for example, `http://backend:8080` from Docker networking).
+6. To enable the optional Slack relay, set `SLACK_WEBHOOK_URL` in the backend environment. Keep webhook values private; do not commit them.
+7. For a short classroom timer, set `DEMO_TIMEOUT=PT30S`. The default is `P3D`.
+
+For frontend-only development, run `npm ci` and `npm run dev` in `frontend-react`. For backend development, run `mvn test` in `backend-springboot`; running the API also requires a configured database.
+
+## Configuration
+
+| Variable | Default | Description |
+|---|---|---|
+| `POSTGRES_DB` | `chargeback` | Compose PostgreSQL database |
+| `POSTGRES_USER` | `chargeback` | Compose PostgreSQL user |
+| `POSTGRES_PASSWORD` | `change-me` | Local-only example; set a private password |
+| `APP_WORKFLOW_ENABLED` | `false` | Starts a Camunda process when true |
+| `CAMUNDA_CLIENT_REST_ADDRESS` | `http://host.docker.internal:8088` in Compose | Camunda REST endpoint |
+| `CAMUNDA_CLIENT_ZEEBE_GRPC_ADDRESS` | `http://host.docker.internal:26500` in Compose | Zeebe gateway endpoint |
+| `TRANSACTION_API_BASE_URL` | `http://backend:8080` in Compose | Backend base URL reachable by the connector |
+| `DEMO_TIMEOUT` | `P3D` | Merchant response duration in ISO-8601 format |
+| `HIGH_VALUE_THRESHOLD` | `4000` | Amount at or above which an alert is raised |
+| `SLACK_WEBHOOK_URL` | Empty | Optional private Slack incoming webhook |
+
+Configuration details and setup troubleshooting: [setup guide](docs/setup-guide.md).
+
+## Verification
+
+Run the application checks:
+
+```powershell
+# Backend build, tests, and package
+mvn -f backend-springboot/pom.xml verify
+
+# Frontend behavior tests and production build
+cd frontend-react
+npm ci
+npm test
+npm run build
+```
+
+Frontend tests cover multi-transaction submission, merchant response submission, API validation feedback, and empty-proxy-error feedback. Backend HTTP integration tests exercise JSON request/response behavior and `200`, `201`, `202`, and `400` status outcomes using an embedded H2 database. The BPMN source and backend resource copies are kept identical.
+
+These automated checks do not deploy BPMN or start Camunda. Confirm deployed process instances, connector outcomes, timer paths, and error boundaries in Camunda Operate before presenting engine-run evidence. See [the testing guide](docs/testing-guide.md).
+
+## Submission readiness
+
+| Guideline deliverable | Current repository evidence |
+|---|---|
+| Main BPMN process, child ledger process, gateways, FEEL, and mappings | `bpmn-models/` and [workflow explanation](docs/bpmn-workflow-explanation.md) |
+| Parallel multi-instance, merchant subprocess, timer, error boundaries, and Call Activity | Main BPMN model; execution still requires Camunda |
+| Spring REST API, persistence, typed workers, business-error handling | `backend-springboot/` |
+| React statement portal, Tasklist, tracker, and user feedback | `frontend-react/` |
+| Dockerfiles and Compose configuration | Root `docker-compose.yml`, plus service Dockerfiles |
+| API, schema, setup, testing, architecture, and viva documentation | `docs/` |
+| Approximately 20-page report and genuine application/Operate screenshots | **Separate submission deliverable; not included. Capture from the running environment rather than fabricate evidence.** |
+| Live Camunda deployment and end-to-end execution evidence | **Requires a configured Camunda 8 cluster and Connector runtime; not verified by local automated tests.** |
+
+The report should follow the prescribed seven-chapter structure: executive summary/use case; BPMN architecture/failure handling; system architecture/technology; data contracts/API; Docker/deployment; testing/evidence; team contributions/conclusion. See the submission guidelines supplied with the project.
+
+## Repository map
+
+```text
+backend-springboot/  Spring Boot API, persistence, workers, tests, BPMN runtime resources
+bpmn-models/         Main chargeback process and reusable ledger reversal process
+docs/                Architecture, API, database, setup, testing, workflow, and viva guides
+frontend-react/      React portal, styles, behavior tests, and Vite configuration
+docker-compose.yml   PostgreSQL + API + frontend orchestration
+```
 
 ## Team
 
@@ -105,21 +238,12 @@ These are mock records; the project does not process real cardholder or payment 
 | Dito Dileep | RA2411026010050 | BPMN architecture, Camunda integration, deployment, and implementation |
 | Adithya R Nath | RA2411026010003 | Spring Boot APIs, React interface, REST integration, and testing |
 
-## Verification
-
-- Backend: `mvn test` from `backend-springboot`.
-- Frontend: `npm ci && npm run build` from `frontend-react`.
-- Workflow scenarios and BPMN checks: [testing guide](docs/testing-guide.md).
-- Setup details: [setup guide](docs/setup-guide.md).
-
-The automated tests do not start a Camunda cluster. Confirm model deployment and successful executions in Camunda Operate before presenting engine-run evidence.
-
 ## Project documentation
 
 - [Architecture](docs/architecture.md)
+- [REST API reference](docs/api-documentation.md)
 - [BPMN workflow explanation](docs/bpmn-workflow-explanation.md)
 - [Database schema](docs/database-schema.md)
+- [Setup guide](docs/setup-guide.md)
 - [Testing guide](docs/testing-guide.md)
 - [Viva questions](docs/viva-questions.md)
-
-The attached submission guidelines also prescribe a separate approximately 20-page technical report and actual application/Operate screenshots. Those screenshots and execution logs must be captured from a running Camunda environment; this repository does not fabricate that evidence.

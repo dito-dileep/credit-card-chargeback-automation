@@ -1,6 +1,6 @@
 # REST API reference
 
-The API is served by Spring Boot on port 8080. Successful endpoints return JSON bodies as well as an HTTP status; error responses include an `error` field. Validation and missing-record errors return HTTP 400.
+The API is served by Spring Boot on port 8080. Successful endpoints return JSON bodies as well as an HTTP status; error responses include an `error` field. Validation and missing-record errors return HTTP 400. A workflow action that requires Camunda while no client is available returns HTTP 503.
 
 ## Endpoints
 
@@ -39,6 +39,8 @@ Content-Type: application/json
 The connector maps the response body to `fraudAlertResult`. `202` is a successful 2xx response for the HTTP JSON Connector. The body reports the recorded outcome and optional Slack delivery state; no success response is fabricated when input validation fails.
 
 Creating a case returns `201 Created`, the serialized case body, and a `Location: /api/disputes/{id}` header. Publishing a merchant response returns `202 Accepted` with `{"status":"correlated"}` after Camunda acknowledges the message. These endpoints require their corresponding external workflow configuration.
+
+If a merchant-response request targets an item that is awaiting a response but the application has no Camunda client, the API returns `503 Service Unavailable` with an `error` message instead of reporting a false correlation success.
 
 ## Create a multi-transaction case
 

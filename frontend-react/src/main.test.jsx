@@ -200,4 +200,36 @@ describe('chargeback dashboard', () => {
 
     expect(document.body.textContent).toContain('Request failed (HTTP 502)');
   });
+
+  it('navigates through tracking, tasklist, fraud desk, and statement views', async () => {
+    await renderDashboard();
+
+    await act(async () => {
+      [...document.querySelectorAll('nav button')]
+        .find(button => button.textContent === 'Tracking')
+        .click();
+    });
+    expect(document.body.textContent).toContain('Dispute tracking');
+
+    await act(async () => {
+      [...document.querySelectorAll('nav button')]
+        .find(button => button.textContent === 'Tasklist')
+        .click();
+    });
+    expect(document.body.textContent).toContain('Merchant response inbox');
+
+    await act(async () => {
+      [...document.querySelectorAll('nav button')]
+        .find(button => button.textContent === 'Fraud desk')
+        .click();
+    });
+    expect(document.body.textContent).toContain('High-value fraud desk');
+
+    await act(async () => {
+      [...document.querySelectorAll('nav button')]
+        .find(button => button.textContent === 'Statement')
+        .click();
+    });
+    expect(document.body.textContent).toContain('Recent transactions');
+  });
 });

@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import heroImage from './assets/chargeback-hero.png';
 import './style.css';
-import './tasklist.css';
 
 const api = (url, options) => fetch(`/api${url}`, options).then(async response => {
   const body = await response.text();
@@ -86,16 +84,20 @@ export function App() {
 
   const selectedCount = Object.values(selected).filter(Boolean).length;
   const tabs = ['Statement', 'Tracking', 'Tasklist', 'Fraud desk'];
+  const allItems = cases.flatMap(disputeCase => disputeCase.items);
+  const activeCases = cases.filter(disputeCase => disputeCase.status !== 'COMPLETED').length;
+  const highValueItems = allItems.filter(item => Number(item.amount) >= 4000).length;
 
-  return <main>
-    <header>
+  return <main className="app-shell">
+    <header className="topbar">
       <div className="brand">
         <span className="brandmark">C</span>
-        <div><small>CAPITAL ONE · DISPUTES</small><h1>Chargeback Center</h1></div>
+        <div className="brand-copy"><small>CAPITAL ONE · CASE OPERATIONS</small><h1>Chargeback Center</h1></div>
       </div>
       <nav aria-label="Main navigation">
         {tabs.map(name => <button
           className={tab === name ? 'active' : ''}
+          aria-current={tab === name ? 'page' : undefined}
           onClick={() => setTab(name)}
           key={name}
         >{name}</button>)}
@@ -105,22 +107,40 @@ export function App() {
     {message && <p className="notice" role="status">{message}</p>}
 
     {tab === 'Statement' && <>
-      <section className="hero" style={{
-        backgroundImage: `linear-gradient(90deg,rgba(4,18,46,.98) 0%,rgba(7,31,75,.82) 46%,rgba(7,31,75,.08) 100%),url(${heroImage})`
-      }}>
+      <section className="hero-panel">
         <div className="hero-copy">
-          <span className="eyebrow">SECURE SELF-SERVICE</span>
+          <span className="eyebrow">DISPUTES, WITH CLARITY</span>
           <p>Account ending in <b>4821</b></p>
-          <h2>Clear answers for every charge.</h2>
+          <h2>Clarity for every <span>charge.</span></h2>
           <p className="subcopy">Select the transactions you don’t recognize and submit one secure dispute case. We’ll track every line, every decision, and every refund.</p>
-          <div className="trust"><span>◈ Encrypted request</span><span>◷ Real-time tracking</span></div>
+          <div className="trust"><span>One claim · multiple transactions</span><span>Live case visibility</span></div>
         </div>
         <button className="primary" disabled={!selectedCount} onClick={submit}>
           {selectedCount ? `Submit ${selectedCount} selected` : 'Select transactions'}
         </button>
       </section>
+
+      <section className="overview-grid" aria-label="Dispute overview">
+        <article className="overview-card">
+          <span className="overview-label">Active cases</span>
+          <strong className="overview-value">{activeCases}<small>in review</small></strong>
+        </article>
+        <article className="overview-card">
+          <span className="overview-label">Merchant inbox</span>
+          <strong className="overview-value">{tasks.length}<small>awaiting reply</small></strong>
+        </article>
+        <article className="overview-card">
+          <span className="overview-label">High-value flags</span>
+          <strong className="overview-value">{highValueItems}<small>fraud review</small></strong>
+        </article>
+        <article className="overview-card">
+          <span className="overview-label">Claim items</span>
+          <strong className="overview-value">{allItems.length}<small>tracked lines</small></strong>
+        </article>
+      </section>
+
       <section className="section-head">
-        <div><span className="eyebrow dark">YOUR ACTIVITY</span><h2>Recent transactions</h2></div>
+        <div><span className="eyebrow">STATEMENT · SELECT MULTIPLE</span><h2>Recent transactions</h2></div>
         <label className="reason">Dispute reason
           <select value={reason} onChange={event => setReason(event.target.value)}>
             <option value="FRAUD">Fraud</option>
@@ -130,41 +150,49 @@ export function App() {
         </label>
       </section>
       <section className="table-card">
-        <div className="table-note">Choose each transaction that needs review. Submit selected lines as one claim.</div>
-        <table>
-          <thead><tr><th></th><th>Transaction</th><th>Date</th><th>Amount</th><th>Card status</th></tr></thead>
-          <tbody>{transactions.map(transaction => <tr key={transaction.id}>
-            <td><input
-              aria-label={`Select ${transaction.merchant}`}
-              type="checkbox"
-              disabled={transaction.disputed}
-              checked={!!selected[transaction.id]}
-              onChange={event => setSelected({
-                ...selected,
-                [transaction.id]: event.target.checked
-              })}
-            /></td>
-            <td><strong>{transaction.merchant}</strong>
-              <small>{transaction.id}{transaction.disputed ? ' · already disputed' : ''}</small>
-            </td>
-            <td>{transaction.date}</td>
-            <td className="amount">₹{Number(transaction.amount).toLocaleString('en-IN')}</td>
-            <td><span className="pill">{transaction.status}</span></td>
-          </tr>)}</tbody>
-        </table>
+        <div className="table-note">
+          <span>Choose transaction lines to combine into one claim.</span>
+          <span>{selectedCount} SELECTED · {transactions.length} STATEMENT LINES</span>
+        </div>
+        <div className="table-scroll">
+          <table>
+            <thead><tr><th></th><th>Transaction</th><th>Date</th><th>Amount</th><th>Card status</th></tr></thead>
+            <tbody>{transactions.map(transaction => <tr key={transaction.id}>
+              <td><input
+                aria-label={`Select ${transaction.merchant}`}
+                type="checkbox"
+                disabled={transaction.disputed}
+                checked={!!selected[transaction.id]}
+                onChange={event => setSelected({
+                  ...selected,
+                  [transaction.id]: event.target.checked
+                })}
+              /></td>
+              <td><strong>{transaction.merchant}</strong>
+                <small>{transaction.id}{transaction.disputed ? ' · already disputed' : ''}</small>
+              </td>
+              <td>{transaction.date}</td>
+              <td className="amount">₹{Number(transaction.amount).toLocaleString('en-IN')}</td>
+              <td><span className="pill">{transaction.status}</span></td>
+            </tr>)}</tbody>
+          </table>
+        </div>
       </section>
     </>}
 
     {tab === 'Tracking' && <Tracking cases={cases} />}
     {tab === 'Tasklist' && <Tasklist tasks={tasks} onRespond={respondToTask} />}
     {tab === 'Fraud desk' && <Fraud cases={cases} />}
-    <footer>Protected demo environment · Multi-Transaction Chargeback Automation</footer>
+    <footer><span>SIMULATED DATA · PROTECTED DEMO ENVIRONMENT</span><span>MULTI-TRANSACTION CHARGEBACK AUTOMATION</span></footer>
   </main>;
 }
 
 function Tracking({ cases }) {
-  return <section>
-    <h2>Dispute tracking</h2>
+  return <section className="content-panel">
+    <div className="content-heading">
+      <div><span className="eyebrow">CASE OPERATIONS</span><h2>Dispute tracking</h2></div>
+      <p>Refreshes automatically while the case is being processed.</p>
+    </div>
     {!cases.length
       ? <div className="empty">No dispute claims yet. Select transactions from your statement.</div>
       : cases.map(disputeCase => <article className="case" key={disputeCase.id}>
@@ -186,9 +214,11 @@ function Tracking({ cases }) {
 }
 
 function Tasklist({ tasks, onRespond }) {
-  return <section>
-    <h2>Tasklist · merchant responses</h2>
-    <p>Correlate a merchant decision with the matching transaction while its response window is open.</p>
+  return <section className="content-panel">
+    <div className="content-heading">
+      <div><span className="eyebrow">HUMAN-IN-THE-LOOP</span><h2>Merchant response inbox</h2></div>
+      <p>Responses correlate to a transaction while its timer window is open.</p>
+    </div>
     {!tasks.length
       ? <div className="empty">No merchant responses are waiting. Start a workflow with Camunda enabled.</div>
       : tasks.map(task => <article className="case" key={task.id}>
@@ -208,15 +238,17 @@ function Tasklist({ tasks, onRespond }) {
 function Fraud({ cases }) {
   const alerts = cases.flatMap(disputeCase => disputeCase.items)
     .filter(item => Number(item.amount) >= 4000);
-  return <section>
-    <h2>High-value fraud monitoring</h2>
+  return <section className="content-panel">
+    <div className="content-heading">
+      <div><span className="eyebrow">RISK SIGNALS</span><h2>High-value fraud desk</h2></div>
+    </div>
     <p>Items at or above ₹4,000 are routed through the REST connector to the fraud-desk API and optional Slack webhook.</p>
     {alerts.length
-      ? <table><tbody>{alerts.map(item => <tr key={item.id}>
-        <td>{item.merchant}</td>
-        <td>₹{item.amount}</td>
-        <td><span className="pill">{item.fraudAlertStatus}</span></td>
-      </tr>)}</tbody></table>
+      ? <div className="fraud-table-wrap"><table><tbody>{alerts.map(item => <tr key={item.id}>
+          <td>{item.merchant}</td>
+          <td>₹{item.amount}</td>
+          <td><span className="pill">{item.fraudAlertStatus}</span></td>
+        </tr>)}</tbody></table></div>
       : <div className="empty">No high-value alerts yet.</div>}
   </section>;
 }

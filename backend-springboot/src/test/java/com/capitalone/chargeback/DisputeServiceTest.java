@@ -100,6 +100,12 @@ class DisputeServiceTest {
         assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
         assertTrue(response.getBody().contains("\"merchant\":\"Amazon India\""));
         assertTrue(response.getBody().contains("\"eligibleForDispute\":true"));
+
+        var missing = http.getForEntity(
+                "http://localhost:" + port + "/api/transactions/unknown-transaction",
+                String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, missing.getStatusCode());
+        assertTrue(missing.getBody().contains("\"error\""));
     }
 
     @Test
@@ -158,5 +164,59 @@ class DisputeServiceTest {
                 "NOT_CONFIGURED",
                 objectMapper.readTree(items.getBody()).get(0)
                                 .path("fraudAlertStatus").asText());
+
+        var dispute = http.getForEntity(
+                "http://localhost:" + port + "/api/disputes/" + caseId,
+                String.class);
+        assertEquals(HttpStatus.OK, dispute.getStatusCode());
+        assertEquals(caseId, objectMapper.readTree(dispute.getBody()).path("id").asText());
+
+        var refund = http.getForEntity(
+                "http://localhost:" + port + "/api/refunds/" + itemId,
+                String.class);
+        assertEquals(HttpStatus.OK, refund.getStatusCode());
+        assertEquals(
+                "NOT_STARTED",
+                objectMapper.readTree(refund.getBody()).path("refundStatus").asText());
+
+        var disputesList = http.getForEntity(
+                "http://localhost:" + port + "/api/disputes",
+                String.class);
+        assertEquals(HttpStatus.OK, disputesList.getStatusCode());
+        assertTrue(objectMapper.readTree(disputesList.getBody()).isArray());
+
+        var tasklist = http.getForEntity(
+                "http://localhost:" + port + "/api/tasklist",
+                String.class);
+        assertEquals(HttpStatus.OK, tasklist.getStatusCode());
+        assertTrue(objectMapper.readTree(tasklist.getBody()).isArray());
+
+        var summary = http.getForEntity(
+                "http://localhost:" + port + "/api/dashboard/summary",
+                String.class);
+        assertEquals(HttpStatus.OK, summary.getStatusCode());
+        assertTrue(objectMapper.readTree(summary.getBody()).has("openDisputes"));
+    }
+
+    @Test
+    void liveMerchantResponseReturns503WhenWorkflowEngineIsUnavailable() throws Exception {
+        var disputeCase = service.create(new CreateDisputeRequest(
+                "customer-001",
+                List.of(new DisputeLine("txn-amazon", "FRAUD"))));
+        var item = disputeCase.items.get(0);
+        item.status = "PENDING_MERCHANT";
+        disputes.save(disputeCase);
+
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        var response = http.postForEntity(
+                "http://localhost:" + port + "/api/disputes/" + disputeCase.id
+                        + "/transactions/" + item.id + "/merchant-response",
+                new HttpEntity<>(Map.of("accepted", true), headers),
+                String.class);
+
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertTrue(response.getBody().contains("active Camunda client"));
     }
 }
