@@ -30,6 +30,7 @@ export function App() {
   const [selected, setSelected] = useState({});
   const [reason, setReason] = useState('FRAUD');
   const [message, setMessage] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   const load = () => Promise.all([
     api('/transactions'),
@@ -39,7 +40,8 @@ export function App() {
     setTransactions(transactionRows);
     setCases(disputeCases);
     setTasks(workflowTasks);
-  }).catch(error => setMessage(error.message));
+    setLoadError('');
+  }).catch(error => setLoadError(error.message));
 
   useEffect(() => {
     load();
@@ -105,7 +107,7 @@ export function App() {
       <div className="topbar-meta"><span className="status-dot"></span><span>DEMO ENVIRONMENT</span></div>
     </header>
 
-    {message && <p className="notice" role="status">{message}</p>}
+    {(message || loadError) && <p className="notice" role="status">{message || loadError}</p>}
 
     {tab === 'Statement' && <>
       <section className="hero-panel">
@@ -329,4 +331,7 @@ function About() {
 }
 
 export const root = createRoot(document.getElementById('root'));
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => root.unmount());
+}
 root.render(<App />);

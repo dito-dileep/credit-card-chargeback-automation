@@ -176,25 +176,60 @@ The Compose stack starts PostgreSQL, the API, and the static frontend. It does *
 6. To enable the optional Slack relay, set `SLACK_WEBHOOK_URL` in the backend environment. Keep webhook values private; do not commit them.
 7. For a short classroom timer, set `DEMO_TIMEOUT=PT30S`. The default is `P3D`.
 
-### Run a local API and UI simulation (no Docker required)
+### From a blank Windows laptop: run the API and UI (no Docker required)
 
-The `local` Spring profile uses an in-memory H2 database and keeps Camunda workflow execution disabled. It starts the real Spring Boot REST API with the sample statement records, so the React screens and API contracts can be exercised together. The database is temporary and resets when the API stops; this profile is for development and demonstrations only.
+Install Git, Java 21, Maven 3.9+, and Node.js 20+. On Windows, open PowerShell and install them with `winget` if they are not already installed:
 
-In one terminal, from the repository root:
-
-```shell
-mvn -f backend-springboot/pom.xml spring-boot:run -Dspring-boot.run.profiles=local
+```powershell
+winget install --id Git.Git -e
+winget install --id EclipseAdoptium.Temurin.21.JDK -e
+winget install --id Apache.Maven -e
+winget install --id OpenJS.NodeJS.LTS -e
 ```
 
-In a second terminal:
+Close and reopen PowerShell after installation. Download the project into your Downloads folder:
+
+```powershell
+Set-Location "$HOME\Downloads"
+git clone https://github.com/dito-dileep/credit-card-chargeback-automation.git
+Set-Location "$HOME\Downloads\credit-card-chargeback-automation"
+```
+
+This local demo uses the real Spring Boot REST API with an in-memory H2 database and five sample transactions. Camunda is intentionally disabled in this profile; database records reset when the backend stops. It is suitable for demonstrating the portal and REST behavior, not a production deployment or a completed Camunda process execution.
+
+**Terminal 1 — backend API** (run from the repository folder):
 
 ```shell
-cd frontend-react
+Set-Location "$HOME\Downloads\credit-card-chargeback-automation"
+mvn -f backend-springboot\pom.xml spring-boot:run "-Dspring-boot.run.profiles=local"
+```
+
+Wait until Maven prints `Started ChargebackApplication`. The API is at `http://localhost:8080`; verify the sample data at `http://localhost:8080/api/transactions`.
+
+**Terminal 2 — React frontend**:
+
+```shell
+Set-Location "$HOME\Downloads\credit-card-chargeback-automation\frontend-react"
 npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173`. The Vite development server proxies `/api` requests to `http://localhost:8080`. Creating and tracking claims, loading sample transactions, and recording fraud-alert API responses can be demonstrated. Merchant replies that require a running Camunda engine return an explicit `503`; no simulated response is presented as a completed workflow. To test merchant decisions, timers, ledger reversal, and connectors end to end, use the PostgreSQL Compose stack with a deployed Camunda 8 cluster and Connector runtime.
+Open `http://localhost:5173`. Vite forwards `/api` requests to the backend on port `8080`. Select two or more available transaction rows, choose a reason, and click **Review selected**; the case appears under **Tracking**. The fraud-alert REST endpoint can also be exercised with the included sample data. Merchant replies that require Camunda return `503` in local-demo mode; they are not falsely reported as completed. To demonstrate real merchant decisions, timers, ledger reversal, or connectors, use the PostgreSQL Compose stack with a separately deployed Camunda 8 cluster and Connector runtime.
+
+To run the backend test suite, use a third PowerShell terminal from the repository folder:
+
+```powershell
+mvn -f backend-springboot\pom.xml verify
+```
+
+To check the frontend, run these commands from `frontend-react`:
+
+```powershell
+npm test
+npm run build
+```
+
+**Docker/PostgreSQL alternative:** install Docker Desktop, reopen PowerShell, then run `Set-Location "$HOME\Downloads\credit-card-chargeback-automation"` followed by `docker compose up --build`. Open `http://localhost:5173`. Use the Docker stack instead of the local H2 launch; do not start both backends on port `8080` simultaneously.
 
 For frontend-only development, `npm ci` and `npm run dev` in `frontend-react` are sufficient. Automated backend tests use H2 and issue real HTTP requests against a random local port.
 
