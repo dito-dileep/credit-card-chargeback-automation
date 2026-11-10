@@ -232,4 +232,18 @@ describe('chargeback dashboard', () => {
     });
     expect(document.body.textContent).toContain('Recent transactions');
   });
+
+  it('shows the project and the named project team on the About page', async () => {
+    await renderDashboard();
+
+    await act(async () => {
+      [...document.querySelectorAll('nav button')]
+        .find(button => button.textContent === 'About')
+        .click();
+    });
+
+    expect(document.body.textContent).toContain('Dito Dileep');
+    expect(document.body.textContent).toContain('Adithya R Nath');
+    expect(document.body.textContent).toContain('not affiliated with or endorsed by Capital One');
+  });
 });

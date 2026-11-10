@@ -25,16 +25,24 @@ Banking and Financial Services · Project Idea 3 · Academic demonstration
 |---|---|
 | Customer portal | React statement selection, multi-line claims, tracking, Tasklist, and fraud desk |
 | Application API | Spring Boot REST endpoints with JSON responses and explicit HTTP statuses |
-| Persistence | PostgreSQL for the application; H2 for automated tests |
+| Persistence | PostgreSQL for Compose/deployment; H2 for automated tests and the local demo profile |
 | Workflow | Camunda 8 process with parallel multi-instance transaction evaluation |
 | Integrations | Camunda HTTP JSON REST Connector for transaction metadata and fraud alerts |
 | Human response | Correlated merchant response message and interrupting three-day timer |
 | Recovery | BPMN error boundaries and a reusable ledger-reversal Call Activity |
 | Packaging | Backend/frontend Dockerfiles and a root Docker Compose stack |
 
+## Product experience and design direction
+
+The portal is designed as a calm, editorial fintech workspace: warm paper surfaces, deep botanical green, restrained terracotta accents, generous typography, clear data tiles, and a compact sticky menu. A small motion-led transaction illustration and scrolling project ribbon add character without competing with the task. Animations respect `prefers-reduced-motion`; the interface adapts for phone, tablet, and desktop.
+
+The visual direction was informed by finance and interaction examples indexed by [Awwwards](https://www.awwwards.com/websites/finance/) and [Lapa Ninja](https://www.lapa.ninja/category/finance/). These are inspiration references, not copied layouts or assets. The hero illustration is built from CSS and sample transaction values; it does not use customer data or generated imagery.
+
+The **About** view introduces the student project team and their documented areas of focus. It also makes clear that this academic prototype is not affiliated with Capital One.
+
 ## Screens and workflow
 
-The portal has four focused views: **Statement**, **Tracking**, **Tasklist**, and **Fraud desk**. It uses a dark, high-contrast interface with luminous accent colors, responsive layouts, subtle motion, and reduced-motion support.
+The portal has five focused views: **Statement**, **Tracking**, **Tasklist**, **Fraud desk**, and **About**. The statement view supports a single multi-transaction claim; tracking presents line-level decisions, the Tasklist handles merchant responses, and the fraud desk surfaces high-value items.
 
 ```mermaid
 flowchart LR
@@ -168,7 +176,27 @@ The Compose stack starts PostgreSQL, the API, and the static frontend. It does *
 6. To enable the optional Slack relay, set `SLACK_WEBHOOK_URL` in the backend environment. Keep webhook values private; do not commit them.
 7. For a short classroom timer, set `DEMO_TIMEOUT=PT30S`. The default is `P3D`.
 
-For frontend-only development, run `npm ci` and `npm run dev` in `frontend-react`. For backend development, run `mvn test` in `backend-springboot`; running the API also requires a configured database.
+### Run a local API and UI simulation (no Docker required)
+
+The `local` Spring profile uses an in-memory H2 database and keeps Camunda workflow execution disabled. It starts the real Spring Boot REST API with the sample statement records, so the React screens and API contracts can be exercised together. The database is temporary and resets when the API stops; this profile is for development and demonstrations only.
+
+In one terminal, from the repository root:
+
+```shell
+mvn -f backend-springboot/pom.xml spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+In a second terminal:
+
+```shell
+cd frontend-react
+npm ci
+npm run dev
+```
+
+Open `http://localhost:5173`. The Vite development server proxies `/api` requests to `http://localhost:8080`. Creating and tracking claims, loading sample transactions, and recording fraud-alert API responses can be demonstrated. Merchant replies that require a running Camunda engine return an explicit `503`; no simulated response is presented as a completed workflow. To test merchant decisions, timers, ledger reversal, and connectors end to end, use the PostgreSQL Compose stack with a deployed Camunda 8 cluster and Connector runtime.
+
+For frontend-only development, `npm ci` and `npm run dev` in `frontend-react` are sufficient. Automated backend tests use H2 and issue real HTTP requests against a random local port.
 
 ## Configuration
 
@@ -186,6 +214,7 @@ For frontend-only development, run `npm ci` and `npm run dev` in `frontend-react
 | `SLACK_WEBHOOK_URL` | Empty | Optional private Slack incoming webhook |
 
 Configuration details and setup troubleshooting: [setup guide](docs/setup-guide.md).
+The local `application-local.yml` profile sets H2 and disables Camunda for explicit local simulation; Docker Compose continues to supply PostgreSQL settings.
 
 ## Verification
 
@@ -202,7 +231,7 @@ npm test
 npm run build
 ```
 
-Frontend tests cover multi-transaction submission, merchant response submission, API validation feedback, and empty-proxy-error feedback. Backend HTTP integration tests exercise JSON request/response behavior and `200`, `201`, `202`, and `400` status outcomes using an embedded H2 database. The BPMN source and backend resource copies are kept identical.
+Frontend tests cover multi-transaction submission, merchant response submission, API validation feedback, navigation, and the About view. Backend HTTP integration tests exercise JSON request/response behavior and `200`, `201`, `202`, `400`, and `503` status outcomes using an embedded H2 database. The BPMN source and backend resource copies are kept identical.
 
 These automated checks do not deploy BPMN or start Camunda. Confirm deployed process instances, connector outcomes, timer paths, and error boundaries in Camunda Operate before presenting engine-run evidence. See [the testing guide](docs/testing-guide.md).
 
@@ -233,10 +262,10 @@ docker-compose.yml   PostgreSQL + API + frontend orchestration
 
 ## Team
 
-| Member | Student ID | Focus |
-|---|---|---|
-| Dito Dileep | RA2411026010050 | BPMN architecture, Camunda integration, deployment, and implementation |
-| Adithya R Nath | RA2411026010003 | Spring Boot APIs, React interface, REST integration, and testing |
+| Member | Focus |
+|---|---|
+| Dito Dileep | BPMN architecture, Camunda integration, deployment, and implementation |
+| Adithya R Nath | Spring Boot APIs, React interface, REST integration, and testing |
 
 ## Project documentation
 

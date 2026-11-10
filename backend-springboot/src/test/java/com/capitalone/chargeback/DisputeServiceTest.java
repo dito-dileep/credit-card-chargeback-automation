@@ -109,6 +109,33 @@ class DisputeServiceTest {
     }
 
     @Test
+    void liveDisputeApiCreatesOneCaseForMultipleTransactionLines() throws Exception {
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        var request = Map.of(
+                "customerId", "customer-001",
+                "items", List.of(
+                        Map.of("transactionId", "txn-amazon", "reason", "FRAUD"),
+                        Map.of("transactionId", "txn-flipkart", "reason", "DUPLICATE")));
+
+        var response = http.postForEntity(
+                "http://localhost:" + port + "/api/disputes",
+                new HttpEntity<>(request, headers),
+                String.class);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertTrue(response.getHeaders().getLocation().toString().contains("/api/disputes/"));
+        var created = objectMapper.readTree(response.getBody());
+        assertEquals(2, created.path("items").size());
+        assertEquals(
+                "txn-amazon",
+                created.path("items").get(0).path("transactionId").asText());
+        assertEquals(
+                "txn-flipkart",
+                created.path("items").get(1).path("transactionId").asText());
+    }
+
+    @Test
     void liveFraudApiReturnsHttp202AndRecordedJsonResult() throws Exception {
         var createHeaders = new HttpHeaders();
         createHeaders.setContentType(MediaType.APPLICATION_JSON);
