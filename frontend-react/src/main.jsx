@@ -10,7 +10,7 @@ const api = (url, options) => fetch(`/api${url}`, options).then(async response =
   return result;
 });
 
-function App() {
+export function App() {
   const [tab, setTab] = useState('Statement');
   const [transactions, setTransactions] = useState([]);
   const [cases, setCases] = useState([]);
@@ -207,4 +207,5 @@ function Fraud({ cases }) {
   </section>;
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+export const root = createRoot(document.getElementById('root'));
+root.render(<App />);
