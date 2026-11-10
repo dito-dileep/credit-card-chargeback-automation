@@ -93,9 +93,9 @@ Transaction lines are evaluated in parallel because their metadata, eligibility,
 | Merchant timer | `=duration(merchantTimeout)` | Interrupts the response wait when the configured duration expires |
 | Ledger call inputs | `=caseId`, `=transaction.itemId`, `=transaction.transactionId` | Scopes identifiers into the child process |
 
-The metadata and fraud tasks use the Camunda HTTP JSON REST Connector template `io.camunda.connectors.HttpJson.v2` (version 11), with task type `io.camunda:http-json:1` and modeler connector markers. The fraud connector records an alert through the application API. If `SLACK_WEBHOOK_URL` is configured, the backend optionally forwards that alert to Slack; the webhook is not a second native Camunda connector.
+The metadata and fraud tasks use the Camunda HTTP JSON REST Connector template `io.camunda.connectors.HttpJson.v2` (version 11), with task type `io.camunda:http-json:1` and modeler connector markers. Their Zeebe input mappings and response expressions are part of the executable configuration. The fraud connector records an alert through the application API. If `SLACK_WEBHOOK_URL` is configured, the backend optionally forwards that alert to Slack; the webhook is not a second native Camunda connector.
 
-Business errors use `ZeebeBpmnError` and BPMN error boundaries for invalid requests, metadata evaluation, and ledger reversal. A boundary timer handles merchant timeout. The `P3D` response deadline can be shortened for demonstrations.
+Business errors use `ZeebeBpmnError` and BPMN error boundaries for invalid requests, metadata evaluation, and ledger reversal. A boundary timer handles merchant timeout. The normal response deadline is `P3D`; the opt-in local workflow profile uses `PT30S` for demonstrations.
 
 ## REST API: request and response
 
@@ -214,7 +214,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173`. Vite forwards `/api` requests to the backend on port `8080`. Select two or more available transaction rows, choose a reason, and click **Review selected**; the case appears under **Tracking**. The fraud-alert REST endpoint can also be exercised with the included sample data. Merchant replies that require Camunda return `503` in local-demo mode; they are not falsely reported as completed. To demonstrate real merchant decisions, timers, ledger reversal, or connectors, use the PostgreSQL Compose stack with a separately deployed Camunda 8 cluster and Connector runtime.
+Open `http://localhost:5173`. Vite forwards `/api` requests to the backend on port `8080`. Select two or more available transaction rows, choose a reason, and click **Review selected**; the case appears under **Tracking**. The fraud-alert REST endpoint can also be exercised with the included sample data. Merchant replies that require Camunda return `503` in the H2-only local profile; they are not falsely reported as completed. To demonstrate real merchant decisions, timers, ledger reversal, and connectors without Docker, follow the Camunda 8 Run workflow steps in [the setup guide](docs/setup-guide.md). The PostgreSQL Compose stack is a separate deployment path and requires an external Camunda 8 cluster and Connector runtime.
 
 To run the backend test suite, use a third PowerShell terminal from the repository folder:
 
@@ -268,7 +268,7 @@ npm run build
 
 Frontend tests cover multi-transaction submission, merchant response submission, API validation feedback, navigation, and the About view. Backend HTTP integration tests exercise JSON request/response behavior and `200`, `201`, `202`, `400`, and `503` status outcomes using an embedded H2 database. The BPMN source and backend resource copies are kept identical.
 
-These automated checks do not deploy BPMN or start Camunda. Confirm deployed process instances, connector outcomes, timer paths, and error boundaries in Camunda Operate before presenting engine-run evidence. See [the testing guide](docs/testing-guide.md).
+These automated checks do not deploy BPMN or start Camunda. Confirm deployed process instances, connector outcomes, timer paths, and error boundaries in Camunda Operate before presenting engine-run evidence. See [the testing guide](docs/testing-guide.md) and [the presentation guide](docs/presentation-guide.md).
 
 ## Submission readiness
 
@@ -281,7 +281,7 @@ These automated checks do not deploy BPMN or start Camunda. Confirm deployed pro
 | Dockerfiles and Compose configuration | Root `docker-compose.yml`, plus service Dockerfiles |
 | API, schema, setup, testing, architecture, and viva documentation | `docs/` |
 | Approximately 20-page report and genuine application/Operate screenshots | **Separate submission deliverable; not included. Capture from the running environment rather than fabricate evidence.** |
-| Live Camunda deployment and end-to-end execution evidence | **Requires a configured Camunda 8 cluster and Connector runtime; not verified by local automated tests.** |
+| Live Camunda deployment and end-to-end execution evidence | Requires a running Camunda 8 cluster and Connector runtime; automated tests alone are not evidence. Capture real Operate screenshots/logs when the workflow-enabled demo has been run. |
 
 The report should follow the prescribed seven-chapter structure: executive summary/use case; BPMN architecture/failure handling; system architecture/technology; data contracts/API; Docker/deployment; testing/evidence; team contributions/conclusion. See the submission guidelines supplied with the project.
 
@@ -309,5 +309,6 @@ docker-compose.yml   PostgreSQL + API + frontend orchestration
 - [BPMN workflow explanation](docs/bpmn-workflow-explanation.md)
 - [Database schema](docs/database-schema.md)
 - [Setup guide](docs/setup-guide.md)
+- [Presentation guide](docs/presentation-guide.md)
 - [Testing guide](docs/testing-guide.md)
 - [Viva questions](docs/viva-questions.md)

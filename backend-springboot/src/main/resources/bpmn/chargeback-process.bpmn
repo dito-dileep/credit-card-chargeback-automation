@@ -49,13 +49,17 @@
                         zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
         <bpmn:extensionElements>
           <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
-          <zeebe:taskHeader key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
-          <zeebe:taskHeader key="elementTemplateVersion" value="11" />
-          <zeebe:taskHeader key="resultExpression" value="= { transactionMetadata: body }" />
-          <zeebe:input source="noAuth" target="authentication.type" />
-          <zeebe:input source="GET" target="method" />
-          <zeebe:input source="=transactionApiBaseUrl + &quot;/api/transactions/&quot; + transaction.transactionId" target="url" />
-          <zeebe:input source="= { &quot;Accept&quot;: &quot;application/json&quot; }" target="headers" />
+          <zeebe:taskHeaders>
+            <zeebe:header key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
+            <zeebe:header key="elementTemplateVersion" value="11" />
+            <zeebe:header key="resultExpression" value="= { transactionMetadata: body }" />
+          </zeebe:taskHeaders>
+          <zeebe:ioMapping>
+            <zeebe:input source="noAuth" target="authentication.type" />
+            <zeebe:input source="GET" target="method" />
+            <zeebe:input source="=transactionApiBaseUrl + &quot;/api/transactions/&quot; + transaction.transactionId" target="url" />
+            <zeebe:input source="= { &quot;Accept&quot;: &quot;application/json&quot; }" target="headers" />
+          </zeebe:ioMapping>
         </bpmn:extensionElements>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="i2" sourceRef="metadata" targetRef="evaluate" />
@@ -91,14 +95,18 @@
                         zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
         <bpmn:extensionElements>
           <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
-          <zeebe:taskHeader key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
-          <zeebe:taskHeader key="elementTemplateVersion" value="11" />
-          <zeebe:taskHeader key="resultExpression" value="= { fraudAlertResult: body }" />
-          <zeebe:input source="noAuth" target="authentication.type" />
-          <zeebe:input source="POST" target="method" />
-          <zeebe:input source="=transactionApiBaseUrl + &quot;/api/fraud/alerts&quot;" target="url" />
-          <zeebe:input source="= { &quot;Content-Type&quot;: &quot;application/json&quot; }" target="headers" />
-          <zeebe:input source="= { caseId: caseId, itemId: transaction.itemId, transactionId: transaction.transactionId, amount: transaction.amount }" target="body" />
+          <zeebe:taskHeaders>
+            <zeebe:header key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
+            <zeebe:header key="elementTemplateVersion" value="11" />
+            <zeebe:header key="resultExpression" value="= { fraudAlertResult: body }" />
+          </zeebe:taskHeaders>
+          <zeebe:ioMapping>
+            <zeebe:input source="noAuth" target="authentication.type" />
+            <zeebe:input source="POST" target="method" />
+            <zeebe:input source="=transactionApiBaseUrl + &quot;/api/fraud/alerts&quot;" target="url" />
+            <zeebe:input source="= { &quot;Content-Type&quot;: &quot;application/json&quot; }" target="headers" />
+            <zeebe:input source="= { caseId: caseId, itemId: transaction.itemId, transactionId: transaction.transactionId, amount: transaction.amount }" target="body" />
+          </zeebe:ioMapping>
         </bpmn:extensionElements>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="i8" sourceRef="fraudAlert" targetRef="eligible" />
@@ -131,12 +139,6 @@
         <bpmn:intermediateCatchEvent id="waitForMerchant" name="Wait for merchant response">
           <bpmn:messageEventDefinition messageRef="merchantResponse" />
         </bpmn:intermediateCatchEvent>
-        <bpmn:boundaryEvent id="merchantDeadline" name="Merchant response deadline"
-                            attachedToRef="waitForMerchant" cancelActivity="true">
-          <bpmn:timerEventDefinition>
-            <bpmn:timeDuration>=duration(merchantTimeout)</bpmn:timeDuration>
-          </bpmn:timerEventDefinition>
-        </bpmn:boundaryEvent>
         <bpmn:sequenceFlow id="m3" sourceRef="waitForMerchant" targetRef="merchantDecision" />
         <bpmn:serviceTask id="merchantDecision" name="Evaluate merchant response">
           <bpmn:extensionElements>
@@ -144,16 +146,22 @@
           </bpmn:extensionElements>
         </bpmn:serviceTask>
         <bpmn:sequenceFlow id="m4" sourceRef="merchantDecision" targetRef="merchantEnd" />
-        <bpmn:sequenceFlow id="m5" sourceRef="merchantDeadline" targetRef="recordTimeout" />
-        <bpmn:serviceTask id="recordTimeout" name="Record merchant timeout">
-          <bpmn:extensionElements>
-            <zeebe:taskDefinition type="record-merchant-timeout" />
-          </bpmn:extensionElements>
-        </bpmn:serviceTask>
-        <bpmn:sequenceFlow id="m6" sourceRef="recordTimeout" targetRef="merchantEnd" />
         <bpmn:endEvent id="merchantEnd" />
       </bpmn:subProcess>
       <bpmn:sequenceFlow id="i12" sourceRef="merchant" targetRef="approved" />
+      <bpmn:boundaryEvent id="merchantDeadline" name="Merchant response deadline"
+                          attachedToRef="merchant" cancelActivity="true">
+        <bpmn:timerEventDefinition>
+          <bpmn:timeDuration>=duration(merchantTimeout)</bpmn:timeDuration>
+        </bpmn:timerEventDefinition>
+      </bpmn:boundaryEvent>
+      <bpmn:sequenceFlow id="i18" sourceRef="merchantDeadline" targetRef="recordTimeout" />
+      <bpmn:serviceTask id="recordTimeout" name="Record merchant timeout">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="record-merchant-timeout" />
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="i19" sourceRef="recordTimeout" targetRef="itemEnd" />
       <bpmn:exclusiveGateway id="approved" name="Merchant accepts the dispute?" />
       <bpmn:sequenceFlow id="i13" sourceRef="approved" targetRef="ledger">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
@@ -166,6 +174,7 @@
       <bpmn:callActivity id="ledger" name="Core Banking Ledger Reversal"
                          calledElement="core-banking-ledger-reversal">
         <bpmn:extensionElements>
+          <zeebe:calledElement processId="core-banking-ledger-reversal" />
           <zeebe:ioMapping>
             <zeebe:input source="=caseId" target="caseId" />
             <zeebe:input source="=transaction.itemId" target="itemId" />

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-class WorkflowWorkers {
+public class WorkflowWorkers {
     private final DisputeRepository disputes;
 
     @Value("${app.high-value-threshold:4000}")

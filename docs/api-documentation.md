@@ -20,7 +20,7 @@ The API is served by Spring Boot on port 8080. Successful endpoints return JSON 
 
 ## HTTP requests and responses
 
-The transaction metadata REST Connector sends a `GET /api/transactions/{id}` request and receives HTTP `200 OK` with the transaction JSON body. The connector maps that response body to `transactionMetadata`; the eligibility worker consumes its `id` and `eligibleForDispute` fields.
+The transaction metadata REST Connector sends a `GET /api/transactions/{id}` request and receives HTTP `200 OK` with the transaction JSON body. Its result expression maps `body` to `transactionMetadata`; the eligibility worker consumes its `id` and `eligibleForDispute` fields.
 
 The high-value alert REST Connector sends a JSON `POST /api/fraud/alerts` request and receives HTTP `202 Accepted` with a JSON result, for example:
 
@@ -36,7 +36,7 @@ Content-Type: application/json
 }
 ```
 
-The connector maps the response body to `fraudAlertResult`. `202` is a successful 2xx response for the HTTP JSON Connector. The body reports the recorded outcome and optional Slack delivery state; no success response is fabricated when input validation fails.
+The connector result expression maps `body` to `fraudAlertResult`. `202` is a successful 2xx response for the HTTP JSON Connector. The body reports the recorded outcome and optional Slack delivery state; no success response is fabricated when input validation fails.
 
 Creating a case returns `201 Created`, the serialized case body, and a `Location: /api/disputes/{id}` header. Publishing a merchant response returns `202 Accepted` with `{"status":"correlated"}` after Camunda acknowledges the message. These endpoints require their corresponding external workflow configuration.
 
