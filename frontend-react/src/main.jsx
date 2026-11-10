@@ -330,8 +330,11 @@ function About() {
   </section>;
 }
 
-export const root = createRoot(document.getElementById('root'));
+export const root = import.meta.hot?.data.root
+  || createRoot(document.getElementById('root'));
 if (import.meta.hot) {
-  import.meta.hot.dispose(() => root.unmount());
+  import.meta.hot.dispose(data => {
+    data.root = root;
+  });
 }
 root.render(<App />);
