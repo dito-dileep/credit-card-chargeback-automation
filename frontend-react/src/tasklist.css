@@ -1,0 +1,16 @@
+.task-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.task-actions button:first-child {
+  background: #e7f7ee;
+  color: #18764a;
+}
+
+.task-actions button:last-child {
+  background: #ffebeb;
+  color: #b42239;
+}

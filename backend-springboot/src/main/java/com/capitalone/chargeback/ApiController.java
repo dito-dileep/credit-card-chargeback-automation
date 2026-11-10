@@ -1,7 +1,94 @@
 package com.capitalone.chargeback;
 
-import org.springframework.web.bind.annotation.*;import java.util.*;
-@RestController @RequestMapping("/api") @CrossOrigin class ApiController { final DisputeService service;final TransactionRepository transactions;final DisputeRepository disputes; ApiController(DisputeService s,TransactionRepository t,DisputeRepository d){service=s;transactions=t;disputes=d;}
- @GetMapping("/transactions") List<CardTransaction> transactions(){return transactions.findAll();}@GetMapping("/transactions/{id}") CardTransaction transaction(@PathVariable String id){return transactions.findById(id).orElseThrow();}
- @PostMapping("/disputes") DisputeCase create(@RequestBody CreateDisputeRequest r){return service.create(r);}@GetMapping("/disputes") List<DisputeCase> list(){return service.all();}@GetMapping("/disputes/{id}") DisputeCase get(@PathVariable String id){return service.one(id);}@GetMapping("/disputes/{id}/transactions") List<DisputeItem> items(@PathVariable String id){return service.one(id).items;}@GetMapping("/refunds/{id}") DisputeItem refund(@PathVariable String id){return disputes.findAll().stream().flatMap(c->c.items.stream()).filter(i->i.id.equals(id)).findFirst().orElseThrow();}@GetMapping("/dashboard/summary") DashboardSummary summary(){return service.summary();}
- @ExceptionHandler({IllegalArgumentException.class,NoSuchElementException.class}) @ResponseStatus(org.springframework.http.HttpStatus.BAD_REQUEST) Map<String,String> error(Exception e){return Map.of("error",e.getMessage());}}
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+@CrossOrigin
+class ApiController {
+    private final DisputeService service;
+    private final TransactionRepository transactions;
+
+    ApiController(DisputeService service, TransactionRepository transactions) {
+        this.service = service;
+        this.transactions = transactions;
+    }
+
+    @GetMapping("/transactions")
+    List<CardTransaction> transactions() {
+        return transactions.findAll();
+    }
+
+    @GetMapping("/transactions/{id}")
+    CardTransaction transaction(@PathVariable String id) {
+        return transactions.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Transaction not found"));
+    }
+
+    @PostMapping("/disputes")
+    DisputeCase create(@RequestBody CreateDisputeRequest request) {
+        return service.create(request);
+    }
+
+    @GetMapping("/disputes")
+    List<DisputeCase> list() {
+        return service.all();
+    }
+
+    @GetMapping("/disputes/{id}")
+    DisputeCase get(@PathVariable String id) {
+        return service.one(id);
+    }
+
+    @GetMapping("/disputes/{id}/transactions")
+    List<DisputeItem> items(@PathVariable String id) {
+        return service.one(id).items;
+    }
+
+    @PostMapping("/disputes/{caseId}/transactions/{itemId}/merchant-response")
+    Map<String, String> respondToMerchant(
+            @PathVariable String caseId,
+            @PathVariable String itemId,
+            @RequestBody MerchantResponseRequest request) {
+        service.respondToMerchant(caseId, itemId, request.accepted());
+        return Map.of("status", "correlated");
+    }
+
+    @GetMapping("/tasklist")
+    List<WorkflowTask> tasklist() {
+        return service.tasklist();
+    }
+
+    @PostMapping("/fraud/alerts")
+    Map<String, String> fraudAlert(@RequestBody FraudAlertRequest request) {
+        return service.recordFraudAlert(request);
+    }
+
+    @GetMapping("/refunds/{itemId}")
+    DisputeItem refund(@PathVariable String itemId) {
+        return service.refund(itemId);
+    }
+
+    @GetMapping("/dashboard/summary")
+    DashboardSummary summary() {
+        return service.summary();
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, NoSuchElementException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    Map<String, String> error(Exception exception) {
+        return Map.of("error", exception.getMessage());
+    }
+}

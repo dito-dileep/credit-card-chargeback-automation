@@ -1,8 +1,11 @@
 # Viva questions and answers
 
-1. **Why use multi-instance BPMN?** One customer case can contain several transactions. Parallel multi-instance creates one independent workflow token per line while retaining a common case ID.
-2. **How does the timer work?** The boundary event attached to the merchant-response wait cancels that wait when its ISO-8601 duration expires. Production is `P3D`; a demo copy uses `PT30S`.
-3. **Why a Call Activity?** The ledger reversal is reusable and separately versioned. Only an approved path calls it; rejected paths cannot refund.
-4. **Is the metadata task a REST Connector?** No. It is explicitly a Camunda 8 job worker intended to call a REST API. A native outbound Connector needs the compatible Connector runtime and is not claimed here.
-5. **How is data protected?** The implementation uses mock data only, avoids committed secrets, and receives credentials through environment variables.
-6. **How are duplicate disputes prevented?** Validation checks the persisted `disputed` flag as well as duplicate IDs within the submitted case.
+1. **Why use a multi-instance subprocess?** A single case can contain multiple statement lines. Parallel iterations evaluate each item independently while retaining a common case ID.
+2. **Is transaction metadata retrieved by a REST job worker?** No. It is a Camunda outbound REST Connector task using the official HTTP JSON Connector template and the `/api/transactions/{id}` endpoint. The connector task has its own BPMN template marker/icon.
+3. **What does the REST connector do for fraud monitoring?** A condition routes amounts at or above the configured threshold to `POST /api/fraud/alerts`. The endpoint records the alert and reports whether an optional Slack webhook was sent, unconfigured, or failed.
+4. **How does the timer work?** An interrupting boundary timer is attached to the merchant response wait. Its duration is configurable; production default is `P3D`, while `PT30S` is useful for a classroom demo. The timeout worker records a rejected item.
+5. **How does the user provide a merchant response?** The custom Tasklist lists active waiting items and calls the REST API, which publishes a Camunda message correlated by transaction ID.
+6. **Why a Call Activity?** Ledger reversal is a reusable child process. The `=approved = true` route alone calls it; rejected and timed-out routes do not.
+7. **How are business errors handled?** Typed workers raise `ZeebeBpmnError` for invalid process input, metadata evaluation failure, or an ineligible reversal. BPMN Error Boundary Events route those errors to explicit status-recording tasks.
+8. **How is data protected?** The project uses mock banking data. Database credentials and the optional Slack webhook are supplied through environment variables, not committed to source.
+9. **How are duplicates prevented?** API validation rejects repeated transaction IDs in a submission and checks the persisted `disputed` flag before creating a case.

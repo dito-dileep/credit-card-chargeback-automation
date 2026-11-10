@@ -1,10 +1,24 @@
 # Test and demonstration checklist
 
-1. Submit Amazon alone: expected pending case and, with Camunda deployed and merchant response correlated, approved/refunded result.
-2. Submit Amazon + Flipkart: two multi-instance tokens; Flipkart produces a fraud alert.
-3. Submit Subscription Streaming: rejected route, no Call Activity/refund.
-4. Submit NoReply Electronics and do not correlate a message: timer boundary route after deadline.
-5. POST an unknown transaction: HTTP 400.
-6. POST an already selected transaction again: HTTP 400.
+## API and UI
 
-Automated backend tests cover multi-line creation and missing-reason validation. They do not start a Camunda cluster. Deploy BPMN with Modeler/your Camunda 8 cluster and inspect Operate to verify the multi-instance and Call Activity paths.
+1. List transactions and confirm the ineligible Subscription Streaming line cannot be disputed by the workflow.
+2. Select Amazon and Flipkart together and submit them as one case.
+3. Submit an unknown transaction ID, unsupported reason, duplicate line, and already-disputed line; each request must return HTTP 400 with an `error` field.
+4. Open Tracking and confirm the API refreshes case/item state while the workflow runs.
+5. Open Tasklist and correlate an accepted or contested merchant response while an item is waiting.
+
+## Camunda 8
+
+1. Start a case containing Amazon and Flipkart. Verify two independent parallel multi-instance tokens.
+2. Confirm Flipkart takes the `=highValue = true` route and the REST Connector records a fraud alert. Confirm the Slack status is `NOT_CONFIGURED` unless a webhook is supplied.
+3. Accept the Amazon merchant response. Verify only the `=approved = true` route invokes `core-banking-ledger-reversal` and the item becomes `REFUNDED`.
+4. Contest a merchant response and verify the `=approved = false` route does not invoke the ledger process.
+5. Submit Subscription Streaming and verify `=eligible = false` records a rejection without a refund.
+6. Leave NoReply Electronics unanswered and verify the timer boundary worker records `TIMEOUT` and a rejection.
+7. Exercise BPMN errors for invalid workflow input, metadata evaluation, and ledger reversal; inspect their boundary-event paths in Operate.
+8. Capture genuine screenshots and logs from the running app and Camunda Operate for the submission report. Do not treat the automated unit tests as engine execution evidence.
+
+## Automated checks
+
+`mvn test` in `backend-springboot` validates backend service behavior with H2. `npm run build` in `frontend-react` checks the production UI bundle. These checks do not start a Camunda cluster or Connector runtime.

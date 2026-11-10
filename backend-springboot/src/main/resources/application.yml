@@ -15,4 +15,5 @@ app:
   workflow-enabled: ${APP_WORKFLOW_ENABLED:false}
   high-value-threshold: ${HIGH_VALUE_THRESHOLD:4000}
   merchant-timeout: ${DEMO_TIMEOUT:P3D}
+  transaction-api-base-url: ${TRANSACTION_API_BASE_URL:http://localhost:8080}
   slack-webhook-url: ${SLACK_WEBHOOK_URL:}

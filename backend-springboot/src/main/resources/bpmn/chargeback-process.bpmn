@@ -1,15 +1,198 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_Chargeback" targetNamespace="http://chargeback.demo">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+                  id="Definitions_Chargeback"
+                  targetNamespace="http://chargeback.demo">
+  <bpmn:error id="invalidChargebackError" errorCode="INVALID_CHARGEBACK" />
+  <bpmn:error id="transactionMetadataError" errorCode="TRANSACTION_METADATA_ERROR" />
+  <bpmn:error id="ledgerReversalError" errorCode="LEDGER_REVERSAL_FAILED" />
+  <bpmn:message id="merchantResponse" name="merchantResponse">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=transaction.transactionId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
   <bpmn:process id="chargeback-dispute" name="Multi-Transaction Chargeback Dispute" isExecutable="true">
-    <bpmn:startEvent id="start"/><bpmn:sequenceFlow id="f1" sourceRef="start" targetRef="validate"/>
-    <bpmn:serviceTask id="validate" name="Validate chargeback request"><bpmn:extensionElements><zeebe:taskDefinition type="validate-chargeback"/></bpmn:extensionElements></bpmn:serviceTask><bpmn:sequenceFlow id="f2" sourceRef="validate" targetRef="items"/>
-    <bpmn:subProcess id="items" name="Evaluate disputed transactions"><bpmn:multiInstanceLoopCharacteristics isSequential="false"><bpmn:loopCardinality>${transactions.size()}</bpmn:loopCardinality><bpmn:extensionElements><zeebe:loopCharacteristics inputCollection="=transactions" inputElement="transaction" outputCollection="results" outputElement="result"/></bpmn:extensionElements></bpmn:multiInstanceLoopCharacteristics>
-      <bpmn:startEvent id="itemStart"/><bpmn:sequenceFlow id="i1" sourceRef="itemStart" targetRef="metadata"/>
-      <bpmn:serviceTask id="metadata" name="Fetch transaction metadata (REST worker)"><bpmn:extensionElements><zeebe:taskDefinition type="fetch-transaction-metadata"/></bpmn:extensionElements></bpmn:serviceTask><bpmn:sequenceFlow id="i2" sourceRef="metadata" targetRef="evaluate"/>
-      <bpmn:serviceTask id="evaluate" name="Evaluate transaction"><bpmn:extensionElements><zeebe:taskDefinition type="evaluate-transaction"/></bpmn:extensionElements></bpmn:serviceTask><bpmn:sequenceFlow id="i3" sourceRef="evaluate" targetRef="eligible"/>
-      <bpmn:exclusiveGateway id="eligible" name="Eligible?"/><bpmn:sequenceFlow id="i4" sourceRef="eligible" targetRef="merchant" ><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=eligible</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="i5" sourceRef="eligible" targetRef="itemEnd"/>
-      <bpmn:subProcess id="merchant" name="Merchant Representment Window"><bpmn:startEvent id="mStart"/><bpmn:sequenceFlow id="m1" sourceRef="mStart" targetRef="request"/><bpmn:serviceTask id="request" name="Send merchant response request"><bpmn:extensionElements><zeebe:taskDefinition type="send-merchant-request"/></bpmn:extensionElements></bpmn:serviceTask><bpmn:sequenceFlow id="m2" sourceRef="request" targetRef="wait"/><bpmn:intermediateCatchEvent id="wait" name="Wait for merchant response"><bpmn:messageEventDefinition messageRef="merchantResponse"/></bpmn:intermediateCatchEvent><bpmn:boundaryEvent id="deadline" attachedToRef="wait" cancelActivity="true" name="3-day deadline"><bpmn:timerEventDefinition><bpmn:timeDuration>P3D</bpmn:timeDuration></bpmn:timerEventDefinition></bpmn:boundaryEvent><bpmn:sequenceFlow id="m3" sourceRef="wait" targetRef="response"/><bpmn:serviceTask id="response" name="Evaluate merchant response"><bpmn:extensionElements><zeebe:taskDefinition type="evaluate-merchant-response"/></bpmn:extensionElements></bpmn:serviceTask><bpmn:endEvent id="mEnd"/><bpmn:sequenceFlow id="m4" sourceRef="response" targetRef="mEnd"/><bpmn:endEvent id="timeoutEnd" name="Merchant timeout"/><bpmn:sequenceFlow id="m5" sourceRef="deadline" targetRef="timeoutEnd"/></bpmn:subProcess>
-      <bpmn:sequenceFlow id="i6" sourceRef="merchant" targetRef="approved"/><bpmn:exclusiveGateway id="approved" name="Dispute approved?"/><bpmn:sequenceFlow id="i7" sourceRef="approved" targetRef="ledger"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=approved</bpmn:conditionExpression></bpmn:sequenceFlow><bpmn:sequenceFlow id="i8" sourceRef="approved" targetRef="itemEnd"/><bpmn:callActivity id="ledger" name="Core Banking Ledger Reversal" calledElement="core-banking-ledger-reversal"/><bpmn:sequenceFlow id="i9" sourceRef="ledger" targetRef="itemEnd"/><bpmn:endEvent id="itemEnd"/>
-    </bpmn:subProcess><bpmn:sequenceFlow id="f3" sourceRef="items" targetRef="notify"/><bpmn:serviceTask id="notify" name="Notify customer"><bpmn:extensionElements><zeebe:taskDefinition type="notify-customer"/></bpmn:extensionElements></bpmn:serviceTask><bpmn:sequenceFlow id="f4" sourceRef="notify" targetRef="end"/><bpmn:endEvent id="end"/>
-  </bpmn:process><bpmn:message id="merchantResponse" name="merchantResponse"/>
+    <bpmn:startEvent id="start" />
+    <bpmn:sequenceFlow id="f1" sourceRef="start" targetRef="validate" />
+    <bpmn:serviceTask id="validate" name="Validate chargeback request">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="validate-chargeback" />
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="invalidRequest" name="Invalid request" attachedToRef="validate">
+      <bpmn:errorEventDefinition errorRef="invalidChargebackError" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="f2" sourceRef="validate" targetRef="items" />
+    <bpmn:sequenceFlow id="f3" sourceRef="invalidRequest" targetRef="recordInvalidCase" />
+    <bpmn:serviceTask id="recordInvalidCase" name="Record invalid case">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="record-invalid-case" />
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="f4" sourceRef="recordInvalidCase" targetRef="invalidEnd" />
+    <bpmn:endEvent id="invalidEnd" name="Invalid case ended" />
+
+    <bpmn:subProcess id="items" name="Evaluate each disputed transaction">
+      <bpmn:multiInstanceLoopCharacteristics isSequential="false">
+        <bpmn:extensionElements>
+          <zeebe:loopCharacteristics inputCollection="=transactions" inputElement="transaction" />
+        </bpmn:extensionElements>
+      </bpmn:multiInstanceLoopCharacteristics>
+      <bpmn:startEvent id="itemStart" />
+      <bpmn:sequenceFlow id="i1" sourceRef="itemStart" targetRef="metadata" />
+      <bpmn:serviceTask id="metadata" name="Fetch transaction metadata (REST Connector)"
+                        zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2"
+                        zeebe:modelerTemplateVersion="11"
+                        zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
+          <zeebe:taskHeader key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
+          <zeebe:taskHeader key="elementTemplateVersion" value="11" />
+          <zeebe:taskHeader key="resultExpression" value="= { transactionMetadata: body }" />
+          <zeebe:input source="noAuth" target="authentication.type" />
+          <zeebe:input source="GET" target="method" />
+          <zeebe:input source="=transactionApiBaseUrl + &quot;/api/transactions/&quot; + transaction.transactionId" target="url" />
+          <zeebe:input source="= { &quot;Accept&quot;: &quot;application/json&quot; }" target="headers" />
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="i2" sourceRef="metadata" targetRef="evaluate" />
+      <bpmn:serviceTask id="evaluate" name="Evaluate transaction eligibility">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="evaluate-transaction" />
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+      <bpmn:boundaryEvent id="metadataError" name="Metadata unavailable" attachedToRef="evaluate">
+        <bpmn:errorEventDefinition errorRef="transactionMetadataError" />
+      </bpmn:boundaryEvent>
+      <bpmn:sequenceFlow id="i3" sourceRef="evaluate" targetRef="highValue" />
+      <bpmn:sequenceFlow id="i4" sourceRef="metadataError" targetRef="recordTransactionFailure" />
+      <bpmn:serviceTask id="recordTransactionFailure" name="Record evaluation failure">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="record-transaction-failure" />
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="i5" sourceRef="recordTransactionFailure" targetRef="itemEnd" />
+
+      <bpmn:exclusiveGateway id="highValue" name="High-value transaction?" />
+      <bpmn:sequenceFlow id="i6" sourceRef="highValue" targetRef="fraudAlert">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=highValue = true</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="i7" sourceRef="highValue" targetRef="eligible">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=highValue = false</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:serviceTask id="fraudAlert" name="Alert fraud desk (REST Connector)"
+                        zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2"
+                        zeebe:modelerTemplateVersion="11"
+                        zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
+          <zeebe:taskHeader key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
+          <zeebe:taskHeader key="elementTemplateVersion" value="11" />
+          <zeebe:taskHeader key="resultExpression" value="= { fraudAlertResult: body }" />
+          <zeebe:input source="noAuth" target="authentication.type" />
+          <zeebe:input source="POST" target="method" />
+          <zeebe:input source="=transactionApiBaseUrl + &quot;/api/fraud/alerts&quot;" target="url" />
+          <zeebe:input source="= { &quot;Content-Type&quot;: &quot;application/json&quot; }" target="headers" />
+          <zeebe:input source="= { caseId: caseId, itemId: transaction.itemId, transactionId: transaction.transactionId, amount: transaction.amount }" target="body" />
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="i8" sourceRef="fraudAlert" targetRef="eligible" />
+
+      <bpmn:exclusiveGateway id="eligible" name="Eligible for dispute?" />
+      <bpmn:sequenceFlow id="i9" sourceRef="eligible" targetRef="merchant">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=eligible = true</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="i10" sourceRef="eligible" targetRef="recordIneligible">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=eligible = false</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:serviceTask id="recordIneligible" name="Record ineligible transaction">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="record-ineligible-transaction" />
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="i11" sourceRef="recordIneligible" targetRef="itemEnd" />
+
+      <bpmn:subProcess id="merchant" name="Merchant Representment Window">
+        <bpmn:startEvent id="merchantStart" />
+        <bpmn:sequenceFlow id="m1" sourceRef="merchantStart" targetRef="merchantRequest" />
+        <bpmn:serviceTask id="merchantRequest" name="Send merchant response request">
+          <bpmn:extensionElements>
+            <zeebe:taskDefinition type="send-merchant-request" />
+          </bpmn:extensionElements>
+        </bpmn:serviceTask>
+        <bpmn:sequenceFlow id="m2" sourceRef="merchantRequest" targetRef="waitForMerchant" />
+        <bpmn:intermediateCatchEvent id="waitForMerchant" name="Wait for merchant response">
+          <bpmn:messageEventDefinition messageRef="merchantResponse" />
+        </bpmn:intermediateCatchEvent>
+        <bpmn:boundaryEvent id="merchantDeadline" name="Merchant response deadline"
+                            attachedToRef="waitForMerchant" cancelActivity="true">
+          <bpmn:timerEventDefinition>
+            <bpmn:timeDuration>=duration(merchantTimeout)</bpmn:timeDuration>
+          </bpmn:timerEventDefinition>
+        </bpmn:boundaryEvent>
+        <bpmn:sequenceFlow id="m3" sourceRef="waitForMerchant" targetRef="merchantDecision" />
+        <bpmn:serviceTask id="merchantDecision" name="Evaluate merchant response">
+          <bpmn:extensionElements>
+            <zeebe:taskDefinition type="evaluate-merchant-response" />
+          </bpmn:extensionElements>
+        </bpmn:serviceTask>
+        <bpmn:sequenceFlow id="m4" sourceRef="merchantDecision" targetRef="merchantEnd" />
+        <bpmn:sequenceFlow id="m5" sourceRef="merchantDeadline" targetRef="recordTimeout" />
+        <bpmn:serviceTask id="recordTimeout" name="Record merchant timeout">
+          <bpmn:extensionElements>
+            <zeebe:taskDefinition type="record-merchant-timeout" />
+          </bpmn:extensionElements>
+        </bpmn:serviceTask>
+        <bpmn:sequenceFlow id="m6" sourceRef="recordTimeout" targetRef="merchantEnd" />
+        <bpmn:endEvent id="merchantEnd" />
+      </bpmn:subProcess>
+      <bpmn:sequenceFlow id="i12" sourceRef="merchant" targetRef="approved" />
+      <bpmn:exclusiveGateway id="approved" name="Merchant accepts the dispute?" />
+      <bpmn:sequenceFlow id="i13" sourceRef="approved" targetRef="ledger">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=approved = true</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="i14" sourceRef="approved" targetRef="itemEnd">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=approved = false</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:callActivity id="ledger" name="Core Banking Ledger Reversal"
+                         calledElement="core-banking-ledger-reversal">
+        <bpmn:extensionElements>
+          <zeebe:ioMapping>
+            <zeebe:input source="=caseId" target="caseId" />
+            <zeebe:input source="=transaction.itemId" target="itemId" />
+            <zeebe:input source="=transaction.transactionId" target="transactionId" />
+          </zeebe:ioMapping>
+        </bpmn:extensionElements>
+      </bpmn:callActivity>
+      <bpmn:boundaryEvent id="ledgerFailure" name="Ledger reversal failed" attachedToRef="ledger">
+        <bpmn:errorEventDefinition errorRef="ledgerReversalError" />
+      </bpmn:boundaryEvent>
+      <bpmn:sequenceFlow id="i15" sourceRef="ledger" targetRef="itemEnd" />
+      <bpmn:sequenceFlow id="i16" sourceRef="ledgerFailure" targetRef="recordLedgerFailure" />
+      <bpmn:serviceTask id="recordLedgerFailure" name="Record failed ledger reversal">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="record-ledger-failure" />
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="i17" sourceRef="recordLedgerFailure" targetRef="itemEnd" />
+      <bpmn:endEvent id="itemEnd" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="f5" sourceRef="items" targetRef="notify" />
+    <bpmn:serviceTask id="notify" name="Complete dispute case">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="notify-customer" />
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="f6" sourceRef="notify" targetRef="end" />
+    <bpmn:endEvent id="end" />
+  </bpmn:process>
 </bpmn:definitions>
