@@ -36,12 +36,13 @@ let root;
 let cases;
 let tasks;
 let requestError;
+let proxyFailure;
 
 function jsonResponse(body, status = 200) {
   return {
     ok: status >= 200 && status < 300,
     status,
-    json: async () => body
+    text: async () => JSON.stringify(body)
   };
 }
 
@@ -51,8 +52,12 @@ beforeEach(() => {
   cases = [];
   tasks = [];
   requestError = false;
+  proxyFailure = false;
   vi.stubGlobal('fetch', vi.fn(async (url, options = {}) => {
     if (url === '/api/transactions') {
+      if (proxyFailure) {
+        return { ok: false, status: 502, text: async () => '' };
+      }
       return jsonResponse(transactions);
     }
     if (url === '/api/disputes' && options.method === 'POST') {
@@ -187,5 +192,12 @@ describe('chargeback dashboard', () => {
 
     expect(document.body.textContent).toContain('Request rejected by API');
     expect(document.body.textContent).not.toContain('Claim 12345678 submitted.');
+  });
+
+  it('shows the HTTP status when the proxy returns an empty error response', async () => {
+    proxyFailure = true;
+    await renderDashboard();
+
+    expect(document.body.textContent).toContain('Request failed (HTTP 502)');
   });
 });

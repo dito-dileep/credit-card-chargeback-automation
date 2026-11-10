@@ -5,8 +5,22 @@ import './style.css';
 import './tasklist.css';
 
 const api = (url, options) => fetch(`/api${url}`, options).then(async response => {
-  const result = await response.json();
-  if (!response.ok) throw Error(result.error || 'Request failed');
+  const body = await response.text();
+  let result;
+  let invalidJson = false;
+  try {
+    result = body ? JSON.parse(body) : null;
+  } catch {
+    invalidJson = true;
+    if (response.ok) throw Error('Server returned an invalid JSON response');
+  }
+  if (!response.ok) {
+    throw Error(
+      result?.error
+      || (!invalidJson && body)
+      || `Request failed (HTTP ${response.status})`
+    );
+  }
   return result;
 });
 
