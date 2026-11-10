@@ -2,7 +2,7 @@
 
 **Domain:** Banking and Financial Services
 
-**Project idea:** 3, inspired by Capital One
+**Project idea:** 3, inspired by Capital One  
 **Team:** DITO DILEEP (RA2411026010050) and ADITHYA R NATH (RA2411026010003)
 
 A customer selects multiple statement lines in a React application and submits one dispute case. Spring Boot validates and persists the case, then starts a Camunda 8 process. A parallel multi-instance subprocess evaluates each line independently, retrieves transaction metadata through the Camunda REST Connector, checks eligibility, opens a merchant-response window, and calls a reusable ledger-reversal process only for approved items.
