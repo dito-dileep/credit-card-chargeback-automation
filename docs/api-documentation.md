@@ -1,6 +1,6 @@
 # REST API reference
 
-The API is served by Spring Boot on port 8080. Error responses include an `error` field. Validation and missing-record errors return HTTP 400.
+The API is served by Spring Boot on port 8080. Successful endpoints return JSON bodies as well as an HTTP status; error responses include an `error` field. Validation and missing-record errors return HTTP 400.
 
 ## Endpoints
 
@@ -17,6 +17,28 @@ The API is served by Spring Boot on port 8080. Error responses include an `error
 | POST | `/api/fraud/alerts` | Validate and record a high-value alert; optionally send a Slack webhook |
 | GET | `/api/refunds/{itemId}` | Return one item's refund outcome |
 | GET | `/api/dashboard/summary` | Return open cases, approvals, rejections, and high-value item counts |
+
+## HTTP requests and responses
+
+The transaction metadata REST Connector sends a `GET /api/transactions/{id}` request and receives HTTP `200 OK` with the transaction JSON body. The connector maps that response body to `transactionMetadata`; the eligibility worker consumes its `id` and `eligibleForDispute` fields.
+
+The high-value alert REST Connector sends a JSON `POST /api/fraud/alerts` request and receives HTTP `202 Accepted` with a JSON result, for example:
+
+```http
+HTTP/1.1 202 Accepted
+Content-Type: application/json
+```
+
+```json
+{
+  "recorded": true,
+  "slackNotificationStatus": "NOT_CONFIGURED"
+}
+```
+
+The connector maps the response body to `fraudAlertResult`. `202` is a successful 2xx response for the HTTP JSON Connector. The body reports the recorded outcome and optional Slack delivery state; no success response is fabricated when input validation fails.
+
+Creating a case returns `201 Created`, the serialized case body, and a `Location: /api/disputes/{id}` header. Publishing a merchant response returns `202 Accepted` with `{"status":"correlated"}` after Camunda acknowledges the message. These endpoints require their corresponding external workflow configuration.
 
 ## Create a multi-transaction case
 

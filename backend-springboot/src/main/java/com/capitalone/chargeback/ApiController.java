@@ -1,9 +1,11 @@
 package com.capitalone.chargeback;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,8 +40,10 @@ class ApiController {
     }
 
     @PostMapping("/disputes")
-    DisputeCase create(@RequestBody CreateDisputeRequest request) {
-        return service.create(request);
+    ResponseEntity<DisputeCase> create(@RequestBody CreateDisputeRequest request) {
+        DisputeCase disputeCase = service.create(request);
+        return ResponseEntity.created(URI.create("/api/disputes/" + disputeCase.id))
+                .body(disputeCase);
     }
 
     @GetMapping("/disputes")
@@ -58,6 +62,7 @@ class ApiController {
     }
 
     @PostMapping("/disputes/{caseId}/transactions/{itemId}/merchant-response")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     Map<String, String> respondToMerchant(
             @PathVariable String caseId,
             @PathVariable String itemId,
@@ -72,8 +77,8 @@ class ApiController {
     }
 
     @PostMapping("/fraud/alerts")
-    Map<String, String> fraudAlert(@RequestBody FraudAlertRequest request) {
-        return service.recordFraudAlert(request);
+    ResponseEntity<FraudAlertResult> fraudAlert(@RequestBody FraudAlertRequest request) {
+        return ResponseEntity.accepted().body(service.recordFraudAlert(request));
     }
 
     @GetMapping("/refunds/{itemId}")

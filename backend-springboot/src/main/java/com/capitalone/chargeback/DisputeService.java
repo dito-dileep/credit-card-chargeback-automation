@@ -181,7 +181,7 @@ class DisputeService {
     }
 
     @Transactional
-    Map<String, String> recordFraudAlert(FraudAlertRequest request) {
+    FraudAlertResult recordFraudAlert(FraudAlertRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Fraud alert details are required");
         }
@@ -219,9 +219,7 @@ class DisputeService {
         }
 
         item.fraudAlertStatus = slackStatus;
-        return Map.of(
-                "recorded", "true",
-                "slackNotificationStatus", slackStatus);
+        return new FraudAlertResult(true, slackStatus);
     }
 
     DashboardSummary summary() {

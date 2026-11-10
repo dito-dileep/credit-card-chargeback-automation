@@ -1,5 +1,6 @@
 package com.capitalone.chargeback;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,6 +16,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 @Entity
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 class CardTransaction {
     @Id
     String id;
@@ -39,6 +41,7 @@ class CardTransaction {
 }
 
 @Entity
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 class DisputeCase {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -53,6 +56,7 @@ class DisputeCase {
 }
 
 @Entity
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 class DisputeItem {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -84,6 +88,9 @@ record MerchantResponseRequest(boolean accepted) {
 }
 
 record FraudAlertRequest(String caseId, String itemId, String transactionId, BigDecimal amount) {
+}
+
+record FraudAlertResult(boolean recorded, String slackNotificationStatus) {
 }
 
 record WorkflowTask(

@@ -21,4 +21,6 @@
 
 ## Automated checks
 
-`mvn test` in `backend-springboot` validates backend service behavior with H2. `npm run build` in `frontend-react` checks the production UI bundle. These checks do not start a Camunda cluster or Connector runtime.
+`mvn test` in `backend-springboot` starts the Spring Boot API on a random local port with H2 and makes real HTTP requests. It verifies transaction metadata `200 OK` with JSON, case creation `201 Created` with a `Location` and JSON body, fraud alert `202 Accepted` with a JSON result, persistence of the alert status, and invalid alert input `400 Bad Request` with an error body. The other backend tests cover service validation.
+
+`npm run build` in `frontend-react` checks the production UI bundle. The automated checks do not start a Camunda cluster or outbound Connector runtime, so process deployment, connector execution, and Operate evidence still require a configured Camunda environment.
