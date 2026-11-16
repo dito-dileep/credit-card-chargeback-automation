@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
-                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
-                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-                  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
-                  id="Definitions_Chargeback"
-                  targetNamespace="http://chargeback.demo">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_Chargeback" targetNamespace="http://chargeback.demo" exporter="Camunda Modeler" exporterVersion="5.49.0">
   <bpmn:error id="invalidChargebackError" errorCode="INVALID_CHARGEBACK" />
   <bpmn:error id="transactionMetadataError" errorCode="TRANSACTION_METADATA_ERROR" />
   <bpmn:error id="ledgerReversalError" errorCode="LEDGER_REVERSAL_FAILED" />
@@ -34,19 +28,15 @@
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="f4" sourceRef="recordInvalidCase" targetRef="invalidEnd" />
     <bpmn:endEvent id="invalidEnd" name="Invalid case ended" />
-
     <bpmn:subProcess id="items" name="Evaluate each disputed transaction">
-      <bpmn:multiInstanceLoopCharacteristics isSequential="false">
+      <bpmn:multiInstanceLoopCharacteristics>
         <bpmn:extensionElements>
           <zeebe:loopCharacteristics inputCollection="=transactions" inputElement="transaction" />
         </bpmn:extensionElements>
       </bpmn:multiInstanceLoopCharacteristics>
       <bpmn:startEvent id="itemStart" />
       <bpmn:sequenceFlow id="i1" sourceRef="itemStart" targetRef="metadata" />
-      <bpmn:serviceTask id="metadata" name="Fetch transaction metadata (REST Connector)"
-                        zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2"
-                        zeebe:modelerTemplateVersion="11"
-                        zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
+      <bpmn:serviceTask id="metadata" name="Fetch transaction metadata (REST Connector)" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="11" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
         <bpmn:extensionElements>
           <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
           <zeebe:taskHeaders>
@@ -57,8 +47,8 @@
           <zeebe:ioMapping>
             <zeebe:input source="noAuth" target="authentication.type" />
             <zeebe:input source="GET" target="method" />
-            <zeebe:input source="=transactionApiBaseUrl + &quot;/api/transactions/&quot; + transaction.transactionId" target="url" />
-            <zeebe:input source="= { &quot;Accept&quot;: &quot;application/json&quot; }" target="headers" />
+            <zeebe:input source="=transactionApiBaseUrl + &#34;/api/transactions/&#34; + transaction.transactionId" target="url" />
+            <zeebe:input source="= { &#34;Accept&#34;: &#34;application/json&#34; }" target="headers" />
           </zeebe:ioMapping>
         </bpmn:extensionElements>
       </bpmn:serviceTask>
@@ -79,20 +69,14 @@
         </bpmn:extensionElements>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="i5" sourceRef="recordTransactionFailure" targetRef="itemEnd" />
-
       <bpmn:exclusiveGateway id="highValue" name="High-value transaction?" />
       <bpmn:sequenceFlow id="i6" sourceRef="highValue" targetRef="fraudAlert">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
-                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=highValue = true</bpmn:conditionExpression>
+        <bpmn:conditionExpression xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">=highValue = true</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="i7" sourceRef="highValue" targetRef="eligible">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
-                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=highValue = false</bpmn:conditionExpression>
+        <bpmn:conditionExpression xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">=highValue = false</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:serviceTask id="fraudAlert" name="Alert fraud desk (REST Connector)"
-                        zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2"
-                        zeebe:modelerTemplateVersion="11"
-                        zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
+      <bpmn:serviceTask id="fraudAlert" name="Alert fraud desk (REST Connector)" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="11" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
         <bpmn:extensionElements>
           <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
           <zeebe:taskHeaders>
@@ -103,22 +87,21 @@
           <zeebe:ioMapping>
             <zeebe:input source="noAuth" target="authentication.type" />
             <zeebe:input source="POST" target="method" />
-            <zeebe:input source="=transactionApiBaseUrl + &quot;/api/fraud/alerts&quot;" target="url" />
-            <zeebe:input source="= { &quot;Content-Type&quot;: &quot;application/json&quot; }" target="headers" />
+            <zeebe:input source="=transactionApiBaseUrl + &#34;/api/fraud/alerts&#34;" target="url" />
+            <zeebe:input source="= { &#34;Content-Type&#34;: &#34;application/json&#34; }" target="headers" />
             <zeebe:input source="= { caseId: caseId, itemId: transaction.itemId, transactionId: transaction.transactionId, amount: transaction.amount }" target="body" />
           </zeebe:ioMapping>
         </bpmn:extensionElements>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="i8" sourceRef="fraudAlert" targetRef="eligible" />
-
-      <bpmn:exclusiveGateway id="eligible" name="Eligible for dispute?" />
+      <bpmn:exclusiveGateway id="eligible" name="Eligible for dispute?">
+        <bpmn:outgoing>i9</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="i9" sourceRef="eligible" targetRef="merchant">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
-                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=eligible = true</bpmn:conditionExpression>
+        <bpmn:conditionExpression xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">=eligible = true</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="i10" sourceRef="eligible" targetRef="recordIneligible">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
-                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=eligible = false</bpmn:conditionExpression>
+        <bpmn:conditionExpression xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">=eligible = false</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:serviceTask id="recordIneligible" name="Record ineligible transaction">
         <bpmn:extensionElements>
@@ -126,8 +109,8 @@
         </bpmn:extensionElements>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="i11" sourceRef="recordIneligible" targetRef="itemEnd" />
-
       <bpmn:subProcess id="merchant" name="Merchant Representment Window">
+        <bpmn:incoming>i9</bpmn:incoming>
         <bpmn:startEvent id="merchantStart" />
         <bpmn:sequenceFlow id="m1" sourceRef="merchantStart" targetRef="merchantRequest" />
         <bpmn:serviceTask id="merchantRequest" name="Send merchant response request">
@@ -139,22 +122,14 @@
         <bpmn:intermediateCatchEvent id="waitForMerchant" name="Wait for merchant response">
           <bpmn:messageEventDefinition messageRef="merchantResponse" />
         </bpmn:intermediateCatchEvent>
-        <bpmn:sequenceFlow id="m3" sourceRef="waitForMerchant" targetRef="merchantDecision" />
+        <bpmn:endEvent id="merchantEnd" />
         <bpmn:serviceTask id="merchantDecision" name="Evaluate merchant response">
           <bpmn:extensionElements>
             <zeebe:taskDefinition type="evaluate-merchant-response" />
           </bpmn:extensionElements>
         </bpmn:serviceTask>
-        <bpmn:sequenceFlow id="m4" sourceRef="merchantDecision" targetRef="merchantEnd" />
-        <bpmn:endEvent id="merchantEnd" />
       </bpmn:subProcess>
       <bpmn:sequenceFlow id="i12" sourceRef="merchant" targetRef="approved" />
-      <bpmn:boundaryEvent id="merchantDeadline" name="Merchant response deadline"
-                          attachedToRef="merchant" cancelActivity="true">
-        <bpmn:timerEventDefinition>
-          <bpmn:timeDuration>=duration(merchantTimeout)</bpmn:timeDuration>
-        </bpmn:timerEventDefinition>
-      </bpmn:boundaryEvent>
       <bpmn:sequenceFlow id="i18" sourceRef="merchantDeadline" targetRef="recordTimeout" />
       <bpmn:serviceTask id="recordTimeout" name="Record merchant timeout">
         <bpmn:extensionElements>
@@ -164,15 +139,12 @@
       <bpmn:sequenceFlow id="i19" sourceRef="recordTimeout" targetRef="itemEnd" />
       <bpmn:exclusiveGateway id="approved" name="Merchant accepts the dispute?" />
       <bpmn:sequenceFlow id="i13" sourceRef="approved" targetRef="ledger">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
-                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=approved = true</bpmn:conditionExpression>
+        <bpmn:conditionExpression xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">=approved = true</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="i14" sourceRef="approved" targetRef="itemEnd">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
-                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">=approved = false</bpmn:conditionExpression>
+        <bpmn:conditionExpression xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">=approved = false</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:callActivity id="ledger" name="Core Banking Ledger Reversal"
-                         calledElement="core-banking-ledger-reversal">
+      <bpmn:callActivity id="ledger" name="Core Banking Ledger Reversal" calledElement="core-banking-ledger-reversal">
         <bpmn:extensionElements>
           <zeebe:calledElement processId="core-banking-ledger-reversal" />
           <zeebe:ioMapping>
@@ -194,6 +166,12 @@
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="i17" sourceRef="recordLedgerFailure" targetRef="itemEnd" />
       <bpmn:endEvent id="itemEnd" />
+      <bpmn:boundaryEvent id="merchantDeadline" name="Merchant response deadline" attachedToRef="merchant">
+        <bpmn:outgoing>i18</bpmn:outgoing>
+        <bpmn:timerEventDefinition>
+          <bpmn:timeDuration>=duration(merchantTimeout)</bpmn:timeDuration>
+        </bpmn:timerEventDefinition>
+      </bpmn:boundaryEvent>
     </bpmn:subProcess>
     <bpmn:sequenceFlow id="f5" sourceRef="items" targetRef="notify" />
     <bpmn:serviceTask id="notify" name="Complete dispute case">
@@ -204,4 +182,238 @@
     <bpmn:sequenceFlow id="f6" sourceRef="notify" targetRef="end" />
     <bpmn:endEvent id="end" />
   </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Chargeback">
+    <bpmndi:BPMNPlane id="BPMNPlane_Chargeback" bpmnElement="chargeback-dispute">
+      <bpmndi:BPMNShape id="BPMNShape_start" bpmnElement="start">
+        <dc:Bounds x="120" y="180" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_validate" bpmnElement="validate">
+        <dc:Bounds x="210" y="158" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_recordInvalidCase" bpmnElement="recordInvalidCase">
+        <dc:Bounds x="390" y="620" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_invalidEnd" bpmnElement="invalidEnd">
+        <dc:Bounds x="590" y="642" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_items" bpmnElement="items" isExpanded="true">
+        <dc:Bounds x="390" y="80" width="1600" height="560" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_itemStart" bpmnElement="itemStart">
+        <dc:Bounds x="430" y="180" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_metadata" bpmnElement="metadata">
+        <dc:Bounds x="500" y="158" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_evaluate" bpmnElement="evaluate">
+        <dc:Bounds x="690" y="158" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_recordTransactionFailure" bpmnElement="recordTransactionFailure">
+        <dc:Bounds x="690" y="280" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_highValue" bpmnElement="highValue" isMarkerVisible="true">
+        <dc:Bounds x="880" y="178" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_fraudAlert" bpmnElement="fraudAlert">
+        <dc:Bounds x="980" y="158" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_eligible" bpmnElement="eligible" isMarkerVisible="true">
+        <dc:Bounds x="1180" y="178" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1179" y="140.5" width="52" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_recordIneligible" bpmnElement="recordIneligible">
+        <dc:Bounds x="1035" y="320" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_recordLedgerFailure" bpmnElement="recordLedgerFailure">
+        <dc:Bounds x="1815" y="90" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchant" bpmnElement="merchant" isExpanded="true">
+        <dc:Bounds x="1260" y="280" width="400" height="240" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchantStart" bpmnElement="merchantStart">
+        <dc:Bounds x="1280" y="350" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchantRequest" bpmnElement="merchantRequest">
+        <dc:Bounds x="1340" y="328" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_waitForMerchant" bpmnElement="waitForMerchant">
+        <dc:Bounds x="1375" y="425" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchantEnd" bpmnElement="merchantEnd">
+        <dc:Bounds x="1600" y="350" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchantDecision" bpmnElement="merchantDecision">
+        <dc:Bounds x="1480" y="380" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_m1" bpmnElement="m1">
+        <di:waypoint x="1316" y="368" />
+        <di:waypoint x="1340" y="368" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_m2" bpmnElement="m2">
+        <di:waypoint x="1400" y="408" />
+        <di:waypoint x="1393" y="425" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BPMNShape_recordTimeout" bpmnElement="recordTimeout">
+        <dc:Bounds x="1550" y="280" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_approved" bpmnElement="approved" isMarkerVisible="true">
+        <dc:Bounds x="1550" y="178" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1531" y="140.5" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ledger" bpmnElement="ledger">
+        <dc:Bounds x="1650" y="158" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_itemEnd" bpmnElement="itemEnd">
+        <dc:Bounds x="1880" y="180" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ledgerFailure" bpmnElement="ledgerFailure">
+        <dc:Bounds x="1705" y="140" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1684" y="102.5" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_metadataError" bpmnElement="metadataError">
+        <dc:Bounds x="748" y="140" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchantDeadline" bpmnElement="merchantDeadline">
+        <dc:Bounds x="1360" y="262" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1333" y="298" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_i1" bpmnElement="i1">
+        <di:waypoint x="466" y="198" />
+        <di:waypoint x="500" y="198" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i2" bpmnElement="i2">
+        <di:waypoint x="650" y="198" />
+        <di:waypoint x="690" y="198" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i3" bpmnElement="i3">
+        <di:waypoint x="840" y="198" />
+        <di:waypoint x="880" y="203" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i4" bpmnElement="i4">
+        <di:waypoint x="766" y="176" />
+        <di:waypoint x="765" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i5" bpmnElement="i5">
+        <di:waypoint x="840" y="320" />
+        <di:waypoint x="840" y="500" />
+        <di:waypoint x="1898" y="500" />
+        <di:waypoint x="1898" y="216" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i6" bpmnElement="i6">
+        <di:waypoint x="930" y="203" />
+        <di:waypoint x="980" y="198" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i7" bpmnElement="i7">
+        <di:waypoint x="905" y="228" />
+        <di:waypoint x="940" y="250" />
+        <di:waypoint x="1155" y="250" />
+        <di:waypoint x="1180" y="203" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i8" bpmnElement="i8">
+        <di:waypoint x="1130" y="198" />
+        <di:waypoint x="1180" y="203" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i9" bpmnElement="i9">
+        <di:waypoint x="1230" y="203" />
+        <di:waypoint x="1230" y="250" />
+        <di:waypoint x="1380" y="250" />
+        <di:waypoint x="1380" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i10" bpmnElement="i10">
+        <di:waypoint x="1205" y="228" />
+        <di:waypoint x="1205" y="250" />
+        <di:waypoint x="1110" y="250" />
+        <di:waypoint x="1110" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i11" bpmnElement="i11">
+        <di:waypoint x="1110" y="400" />
+        <di:waypoint x="1110" y="500" />
+        <di:waypoint x="1898" y="500" />
+        <di:waypoint x="1898" y="216" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i12" bpmnElement="i12">
+        <di:waypoint x="1575" y="280" />
+        <di:waypoint x="1575" y="228" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i18" bpmnElement="i18">
+        <di:waypoint x="1378" y="262" />
+        <di:waypoint x="1378" y="242" />
+        <di:waypoint x="1464" y="242" />
+        <di:waypoint x="1464" y="339" />
+        <di:waypoint x="1550" y="339" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i19" bpmnElement="i19">
+        <di:waypoint x="1700" y="320" />
+        <di:waypoint x="1880" y="198" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i13" bpmnElement="i13">
+        <di:waypoint x="1600" y="203" />
+        <di:waypoint x="1650" y="198" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i14" bpmnElement="i14">
+        <di:waypoint x="1575" y="228" />
+        <di:waypoint x="1575" y="500" />
+        <di:waypoint x="1898" y="500" />
+        <di:waypoint x="1898" y="216" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i15" bpmnElement="i15">
+        <di:waypoint x="1800" y="198" />
+        <di:waypoint x="1880" y="198" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i16" bpmnElement="i16">
+        <di:waypoint x="1717" y="141" />
+        <di:waypoint x="1717" y="130" />
+        <di:waypoint x="1815" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i17" bpmnElement="i17">
+        <di:waypoint x="1965" y="160" />
+        <di:waypoint x="1965" y="500" />
+        <di:waypoint x="1898" y="500" />
+        <di:waypoint x="1898" y="216" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BPMNShape_notify" bpmnElement="notify">
+        <dc:Bounds x="2070" y="158" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_end" bpmnElement="end">
+        <dc:Bounds x="2270" y="180" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_invalidRequest" bpmnElement="invalidRequest">
+        <dc:Bounds x="252" y="140" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_f1" bpmnElement="f1">
+        <di:waypoint x="156" y="198" />
+        <di:waypoint x="210" y="198" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_f2" bpmnElement="f2">
+        <di:waypoint x="330" y="198" />
+        <di:waypoint x="390" y="198" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_f3" bpmnElement="f3">
+        <di:waypoint x="270" y="176" />
+        <di:waypoint x="270" y="740" />
+        <di:waypoint x="390" y="740" />
+        <di:waypoint x="390" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_f4" bpmnElement="f4">
+        <di:waypoint x="530" y="660" />
+        <di:waypoint x="590" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_f5" bpmnElement="f5">
+        <di:waypoint x="1990" y="198" />
+        <di:waypoint x="2070" y="198" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_f6" bpmnElement="f6">
+        <di:waypoint x="2210" y="198" />
+        <di:waypoint x="2270" y="198" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
 </bpmn:definitions>

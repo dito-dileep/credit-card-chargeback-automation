@@ -35,7 +35,7 @@ The key responses are `200 OK` for reads, `201 Created` with a case body and `Lo
 - **Call Activity:** only an approved response calls `core-banking-ledger-reversal`; rejection and timeout do not reverse the ledger.
 - **REST integration:** the Camunda HTTP JSON Connector fetches transaction metadata and records high-value alerts through the REST API. The Spring API may additionally forward alerts to Slack only when an environment webhook is configured.
 
-The model has parallel multi-instance evaluation. It does not implement a separate sequential multi-instance pass; do not claim that both modes are present.
+The model has sequential multi-instance evaluation so connector and timer state remain isolated between transaction iterations.
 
 ## Closing
 

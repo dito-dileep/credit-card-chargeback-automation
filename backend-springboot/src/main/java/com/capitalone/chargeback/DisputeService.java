@@ -113,7 +113,10 @@ class DisputeService {
                                             "itemId", item.id,
                                             "transactionId", item.transactionId,
                                             "amount", item.amount,
-                                            "reason", item.reason))
+                                            "reason", item.reason,
+                                            "eligibleForDispute", transactions.findById(item.transactionId)
+                                                    .map(transaction -> transaction.eligibleForDispute)
+                                                    .orElse(false)))
                                     .toList()))
                     .send()
                     .join();

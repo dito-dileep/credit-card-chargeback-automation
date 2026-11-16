@@ -42,19 +42,13 @@ public class WorkflowWorkers {
         var variables = job.getVariablesAsMap();
         String caseId = String.valueOf(variables.get("caseId"));
         Object transactionValue = variables.get("transaction");
-        Object metadataValue = variables.get("transactionMetadata");
-        if (!(transactionValue instanceof Map<?, ?> transaction)
-                || !(metadataValue instanceof Map<?, ?> metadata)
-                || !java.util.Objects.equals(
-                        transaction.get("transactionId"), metadata.get("id"))) {
+        if (!(transactionValue instanceof Map<?, ?> transaction)) {
             throw new ZeebeBpmnError(
                     "TRANSACTION_METADATA_ERROR",
-                    "Transaction metadata was not found or mismatched",
+                    "Transaction context was not found",
                     Map.of(
                             "caseId", caseId,
-                            "itemId", transactionValue instanceof Map<?, ?> transactionMap
-                                    ? String.valueOf(transactionMap.get("itemId"))
-                                    : ""));
+                            "itemId", ""));
         }
 
         var disputeCase = disputes.findById(caseId).orElseThrow();
@@ -63,7 +57,7 @@ public class WorkflowWorkers {
                         candidate.id.equals(String.valueOf(transaction.get("itemId"))))
                 .findFirst()
                 .orElseThrow();
-        boolean eligible = Boolean.TRUE.equals(metadata.get("eligibleForDispute"));
+        boolean eligible = Boolean.TRUE.equals(transaction.get("eligibleForDispute"));
         boolean highValue = item.amount.compareTo(highValueThreshold) >= 0;
         item.status = eligible ? "PENDING_MERCHANT" : "REJECTED";
         item.decision = eligible ? "PENDING_MERCHANT" : "REJECTED";

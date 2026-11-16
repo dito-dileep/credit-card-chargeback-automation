@@ -36,7 +36,7 @@
     <bpmn:endEvent id="invalidEnd" name="Invalid case ended" />
 
     <bpmn:subProcess id="items" name="Evaluate each disputed transaction">
-      <bpmn:multiInstanceLoopCharacteristics isSequential="false">
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true">
         <bpmn:extensionElements>
           <zeebe:loopCharacteristics inputCollection="=transactions" inputElement="transaction" />
         </bpmn:extensionElements>
@@ -204,4 +204,67 @@
     <bpmn:sequenceFlow id="f6" sourceRef="notify" targetRef="end" />
     <bpmn:endEvent id="end" />
   </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Chargeback">
+    <bpmndi:BPMNPlane id="BPMNPlane_Chargeback" bpmnElement="chargeback-dispute">
+      <bpmndi:BPMNShape id="BPMNShape_start" bpmnElement="start"><dc:Bounds x="120" y="180" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_validate" bpmnElement="validate"><dc:Bounds x="210" y="158" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_invalidRequest" bpmnElement="invalidRequest"><dc:Bounds x="252" y="140" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_items" bpmnElement="items" isExpanded="true">      <dc:Bounds x="390" y="80" width="1600" height="560" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_recordInvalidCase" bpmnElement="recordInvalidCase"><dc:Bounds x="390" y="620" width="140" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_invalidEnd" bpmnElement="invalidEnd"><dc:Bounds x="590" y="642" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_notify" bpmnElement="notify"><dc:Bounds x="2070" y="158" width="140" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_end" bpmnElement="end"><dc:Bounds x="2270" y="180" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_itemStart" bpmnElement="itemStart"><dc:Bounds x="430" y="180" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_metadata" bpmnElement="metadata"><dc:Bounds x="500" y="158" width="150" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_evaluate" bpmnElement="evaluate"><dc:Bounds x="690" y="158" width="150" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_metadataError" bpmnElement="metadataError"><dc:Bounds x="748" y="140" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_recordTransactionFailure" bpmnElement="recordTransactionFailure"><dc:Bounds x="690" y="280" width="150" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_highValue" bpmnElement="highValue"><dc:Bounds x="880" y="178" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_fraudAlert" bpmnElement="fraudAlert"><dc:Bounds x="980" y="158" width="150" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_eligible" bpmnElement="eligible"><dc:Bounds x="1180" y="178" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_recordIneligible" bpmnElement="recordIneligible">      <dc:Bounds x="1000" y="280" width="150" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchant" bpmnElement="merchant" isExpanded="true"><dc:Bounds x="1260" y="280" width="240" height="180" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchantStart" bpmnElement="merchantStart"><dc:Bounds x="1280" y="350" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchantRequest" bpmnElement="merchantRequest"><dc:Bounds x="1340" y="328" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_waitForMerchant" bpmnElement="waitForMerchant"><dc:Bounds x="1375" y="425" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchantDecision" bpmnElement="merchantDecision"><dc:Bounds x="1450" y="328" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchantEnd" bpmnElement="merchantEnd"><dc:Bounds x="1600" y="350" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_merchantDeadline" bpmnElement="merchantDeadline"><dc:Bounds x="1360" y="262" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_recordTimeout" bpmnElement="recordTimeout"><dc:Bounds x="1550" y="280" width="150" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_approved" bpmnElement="approved"><dc:Bounds x="1550" y="178" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ledger" bpmnElement="ledger"><dc:Bounds x="1650" y="158" width="150" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ledgerFailure" bpmnElement="ledgerFailure"><dc:Bounds x="1705" y="140" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_recordLedgerFailure" bpmnElement="recordLedgerFailure"><dc:Bounds x="1700" y="280" width="150" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_itemEnd" bpmnElement="itemEnd"><dc:Bounds x="1880" y="180" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_f1" bpmnElement="f1"><di:waypoint x="156" y="198" /><di:waypoint x="210" y="198" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_f2" bpmnElement="f2"><di:waypoint x="330" y="198" /><di:waypoint x="390" y="198" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_f3" bpmnElement="f3">      <di:waypoint x="270" y="176" /><di:waypoint x="270" y="740" /><di:waypoint x="390" y="740" /><di:waypoint x="390" y="660" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_f4" bpmnElement="f4"><di:waypoint x="530" y="660" /><di:waypoint x="590" y="660" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_f5" bpmnElement="f5"><di:waypoint x="1990" y="198" /><di:waypoint x="2070" y="198" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_f6" bpmnElement="f6"><di:waypoint x="2210" y="198" /><di:waypoint x="2270" y="198" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i1" bpmnElement="i1"><di:waypoint x="466" y="198" /><di:waypoint x="500" y="198" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i2" bpmnElement="i2"><di:waypoint x="650" y="198" /><di:waypoint x="690" y="198" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i3" bpmnElement="i3"><di:waypoint x="840" y="198" /><di:waypoint x="880" y="203" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i4" bpmnElement="i4"><di:waypoint x="766" y="176" /><di:waypoint x="765" y="280" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i5" bpmnElement="i5"><di:waypoint x="840" y="320" /><di:waypoint x="840" y="500" /><di:waypoint x="1898" y="500" /><di:waypoint x="1898" y="216" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i6" bpmnElement="i6"><di:waypoint x="930" y="203" /><di:waypoint x="980" y="198" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i7" bpmnElement="i7"><di:waypoint x="905" y="228" /><di:waypoint x="940" y="250" /><di:waypoint x="1155" y="250" /><di:waypoint x="1180" y="203" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i8" bpmnElement="i8"><di:waypoint x="1130" y="198" /><di:waypoint x="1180" y="203" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i9" bpmnElement="i9"><di:waypoint x="1230" y="203" /><di:waypoint x="1230" y="250" /><di:waypoint x="1380" y="250" /><di:waypoint x="1380" y="280" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i10" bpmnElement="i10"><di:waypoint x="1205" y="228" /><di:waypoint x="1205" y="250" /><di:waypoint x="1075" y="250" /><di:waypoint x="1075" y="280" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i11" bpmnElement="i11"><di:waypoint x="1075" y="360" /><di:waypoint x="1075" y="500" /><di:waypoint x="1898" y="500" /><di:waypoint x="1898" y="216" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_m1" bpmnElement="m1"><di:waypoint x="1316" y="368" /><di:waypoint x="1340" y="368" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_m2" bpmnElement="m2"><di:waypoint x="1400" y="408" /><di:waypoint x="1393" y="425" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_m3" bpmnElement="m3"><di:waypoint x="1411" y="443" /><di:waypoint x="1450" y="368" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_m4" bpmnElement="m4"><di:waypoint x="1570" y="368" /><di:waypoint x="1600" y="368" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i12" bpmnElement="i12"><di:waypoint x="1500" y="370" /><di:waypoint x="1530" y="370" /><di:waypoint x="1530" y="203" /><di:waypoint x="1550" y="203" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i18" bpmnElement="i18"><di:waypoint x="1396" y="280" /><di:waypoint x="1550" y="320" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i19" bpmnElement="i19"><di:waypoint x="1700" y="320" /><di:waypoint x="1880" y="198" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i13" bpmnElement="i13"><di:waypoint x="1600" y="203" /><di:waypoint x="1650" y="198" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i14" bpmnElement="i14"><di:waypoint x="1575" y="228" /><di:waypoint x="1575" y="500" /><di:waypoint x="1898" y="500" /><di:waypoint x="1898" y="216" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i15" bpmnElement="i15"><di:waypoint x="1800" y="198" /><di:waypoint x="1880" y="198" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i16" bpmnElement="i16"><di:waypoint x="1723" y="176" /><di:waypoint x="1775" y="320" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_i17" bpmnElement="i17"><di:waypoint x="1850" y="320" /><di:waypoint x="1850" y="500" /><di:waypoint x="1898" y="500" /><di:waypoint x="1898" y="216" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
 </bpmn:definitions>

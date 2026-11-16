@@ -10,7 +10,7 @@
 
 ## Camunda 8
 
-1. Start a case containing Amazon and Flipkart. Verify two independent parallel multi-instance tokens.
+1. Start a case containing Amazon and Flipkart. Verify both transaction iterations complete sequentially with isolated connector and timer state.
 2. Confirm Flipkart takes the `=highValue = true` route and the REST Connector records a fraud alert. Confirm the Slack status is `NOT_CONFIGURED` unless a webhook is supplied.
 3. Accept the Amazon merchant response. Verify only the `=approved = true` route invokes `core-banking-ledger-reversal` and the item becomes `REFUNDED`.
 4. Contest a merchant response and verify the `=approved = false` route does not invoke the ledger process.

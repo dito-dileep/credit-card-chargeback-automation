@@ -26,7 +26,7 @@ Banking and Financial Services · Project Idea 3 · Academic demonstration
 | Customer portal | React statement selection, multi-line claims, tracking, Tasklist, and fraud desk |
 | Application API | Spring Boot REST endpoints with JSON responses and explicit HTTP statuses |
 | Persistence | PostgreSQL for Compose/deployment; H2 for automated tests and the local demo profile |
-| Workflow | Camunda 8 process with parallel multi-instance transaction evaluation |
+| Workflow | Camunda 8 process with isolated sequential multi-instance transaction evaluation |
 | Integrations | Camunda HTTP JSON REST Connector for transaction metadata and fraud alerts |
 | Human response | Correlated merchant response message and interrupting three-day timer |
 | Recovery | BPMN error boundaries and a reusable ledger-reversal Call Activity |
@@ -76,13 +76,13 @@ flowchart TD
     Timeout --> End
 ```
 
-Transaction lines are evaluated in parallel because their metadata, eligibility, and merchant decisions are independent. There is no ordering dependency between a customer's selected statement lines. The main BPMN model uses explicit boolean conditions on every exclusive-gateway branch.
+Transaction lines are evaluated sequentially to isolate connector and timer state between iterations and keep each item's decision deterministic. There is no business ordering dependency between selected statement lines. The main BPMN model uses explicit boolean conditions on every exclusive-gateway branch.
 
 ## BPMN and decision dictionary
 
 | Element | FEEL / mapping | Behavior |
 |---|---|---|
-| Multi-instance collection | `=transactions` | Creates one parallel token per submitted dispute line |
+| Multi-instance collection | `=transactions` | Evaluates one submitted dispute line at a time with an isolated loop scope |
 | High-value route | `=highValue = true` | Sends the item through the fraud-alert REST Connector |
 | Standard-value route | `=highValue = false` | Continues to eligibility evaluation |
 | Eligible route | `=eligible = true` | Enters the merchant-response subprocess |

@@ -1,6 +1,6 @@
 # BPMN workflow explanation
 
-The executable `chargeback-dispute` process validates the case, then starts a **parallel multi-instance** embedded subprocess using `=transactions` and the local loop variable `transaction`. Each iteration has its own transaction/item IDs and metadata response.
+The executable `chargeback-dispute` process validates the case, then starts a **sequential multi-instance** embedded subprocess using `=transactions` and the local loop variable `transaction`. Sequential execution isolates connector and timer state before the next iteration starts.
 
 The metadata and fraud-alert tasks use the Camunda **REST Connector** element template (`io.camunda.connectors.HttpJson.v2`, version 11) and connector type `io.camunda:http-json:1`. They are Connector tasks with the modeler marker/icon, not ordinary `@JobWorker` service tasks. The first calls `GET /api/transactions/{id}`. The second calls `POST /api/fraud/alerts` only when `=highValue = true`.
 
