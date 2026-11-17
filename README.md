@@ -11,6 +11,14 @@
 
 Banking and Financial Services · Project Idea 3 · Academic demonstration
 
+<br /><br />
+
+[![Java 21](https://img.shields.io/badge/Java-21-1f6b5b?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6db33f?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Camunda 8](https://img.shields.io/badge/Camunda-8-ff6b35?style=for-the-badge&logo=camunda&logoColor=white)](https://camunda.com/platform/)
+[![React](https://img.shields.io/badge/React-UI-149eca?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![Tests](https://img.shields.io/badge/tests-14%20passing-1f6b5b?style=for-the-badge)](#validation)
+
 </div>
 
 ---
@@ -39,6 +47,57 @@ The portal is designed as a calm, editorial fintech workspace: warm paper surfac
 The visual direction was informed by finance and interaction examples indexed by [Awwwards](https://www.awwwards.com/websites/finance/) and [Lapa Ninja](https://www.lapa.ninja/category/finance/). These are inspiration references, not copied layouts or assets. The hero illustration is built from CSS and sample transaction values; it does not use customer data or generated imagery.
 
 The **About** view introduces the student project team and their documented areas of focus. It also makes clear that this academic prototype is not affiliated with Capital One.
+
+## Demo gallery
+
+These screenshots were captured from the running local stack. They are labeled in the order that makes the strongest live presentation: introduce the portal, submit a case, show human-in-the-loop work, then prove the workflow execution in Operate.
+
+<p align="center">
+  <img src="docs/screenshots/01-portal-overview.png" alt="Clearcase portal overview with animated hero treatment" width="49%" />
+  <img src="docs/screenshots/02-statement-fresh-transactions.png" alt="Statement view showing nine simulated transactions" width="49%" />
+</p>
+<p align="center"><strong>01 · Portal overview</strong> &nbsp;&nbsp; <strong>02 · Fresh statement inputs</strong></p>
+
+<p align="center">
+  <img src="docs/screenshots/03-tasklist-merchant-inbox.png" alt="Camunda-backed merchant response inbox" width="49%" />
+  <img src="docs/screenshots/04-tracking-case-progress.png" alt="Dispute tracking with line-level case status" width="49%" />
+</p>
+<p align="center"><strong>03 · Human response inbox</strong> &nbsp;&nbsp; <strong>04 · Case tracking</strong></p>
+
+<p align="center">
+  <img src="docs/screenshots/05-fraud-desk-alert.png" alt="High-value fraud desk alert for Skyline Travel" width="49%" />
+  <img src="docs/screenshots/06-operate-workflow-instance.png" alt="Camunda Operate workflow instance with variables" width="49%" />
+</p>
+<p align="center"><strong>05 · High-value fraud routing</strong> &nbsp;&nbsp; <strong>06 · Operate execution evidence</strong></p>
+
+<p align="center">
+  <img src="docs/screenshots/07-ledger-reversal-child-process.png" alt="Camunda ledger reversal child process" width="70%" />
+</p>
+<p align="center"><strong>07 · Reusable ledger-reversal child process</strong></p>
+
+<details>
+<summary><strong>Click to see the screenshot labels and what to explain</strong></summary>
+
+- **01 · Portal overview:** the visual entry point and the single-case, many-lines product idea.
+- **02 · Fresh statement inputs:** nine safe, simulated records, including a high-value travel item and an ineligible membership item.
+- **03 · Human response inbox:** merchant acceptance or contest decisions are correlated to one transaction at a time.
+- **04 · Case tracking:** each selected line exposes its own workflow status, merchant state, fraud alert, and refund state.
+- **05 · High-value fraud routing:** `Skyline Travel` demonstrates the fraud connector route without exposing real financial data.
+- **06 · Operate execution evidence:** the process instance, variables, gateways, timer, and multi-instance scope are visible.
+- **07 · Ledger reversal:** the approved path calls a small reusable child process to post the simulated reversal.
+
+</details>
+
+## The “wow” moment
+
+The experience is intentionally designed to feel alive without distracting from the evidence:
+
+1. The portal hero uses layered CSS motion, a floating dispute preview, and a scrolling narrative ribbon.
+2. The statement view turns a familiar list into a guided three-step journey: **Choose → Review → Follow**.
+3. Camunda supplies the orchestration pulse: connector calls, explicit gateway conditions, a merchant timer, fraud routing, and a reusable call activity.
+4. Operate provides the proof layer for the presentation: highlighted paths and process variables show what actually happened.
+
+The UI respects `prefers-reduced-motion`, so the visual treatment remains accessible during a live demo.
 
 ## Screens and workflow
 
@@ -148,6 +207,28 @@ Allowed dispute reasons: `FRAUD`, `MERCHANDISE_NOT_RECEIVED`, and `DUPLICATE`.
 | `GET` | `/api/dashboard/summary` | Return dashboard counts |
 
 Full payloads and endpoint details are in [the API reference](docs/api-documentation.md).
+
+## Presentation-ready demo script
+
+Use the fresh records in the statement view so the screenshots and live run do not depend on the older Amazon/Flipkart examples:
+
+- **Green Bowl Delivery — Merchandise not received:** ordinary eligible route into the merchant window.
+- **Skyline Travel — Fraud:** high-value route into the fraud desk connector.
+- **BrightHome Repairs — Duplicate charge:** ordinary eligible route for a second line in the same case.
+- **FitTrack Membership — Merchandise not received:** ineligible route that demonstrates a clean rejection.
+- **NoReply Electronics — Merchandise not received:** leave unanswered to show the short local timeout route.
+
+For the strongest sequence, select **Green Bowl Delivery + BrightHome Repairs**, show **Tasklist**, then submit **Skyline Travel** separately and finish in **Operate**.
+
+<a id="validation"></a>
+
+## Validation snapshot
+
+- Backend: **8 Maven tests passing**
+- Frontend: **6 Vitest tests passing**
+- Runtime smoke check: frontend `5173`, API `8080`, Camunda/Operate `8090`, connectors `8086`, Zeebe gRPC `26500`
+- BPMN deployment: `chargeback-dispute` and `core-banking-ledger-reversal` deployed successfully
+- Data safety: all screenshots and seed records use simulated transaction data only
 
 ## Run locally
 
