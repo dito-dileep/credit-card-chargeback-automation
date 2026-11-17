@@ -20,6 +20,16 @@ class SeedData {
                         "txn-rejected", "Subscription Streaming", "499");
                 ineligible.eligibleForDispute = false;
                 repository.save(ineligible);
+                repository.save(new CardTransaction(
+                        "txn-food-delivery", "Green Bowl Delivery", "1450"));
+                repository.save(new CardTransaction(
+                        "txn-travel", "Skyline Travel", "18500"));
+                repository.save(new CardTransaction(
+                        "txn-home-services", "BrightHome Repairs", "2750"));
+                var membership = new CardTransaction(
+                        "txn-membership", "FitTrack Membership", "699");
+                membership.eligibleForDispute = false;
+                repository.save(membership);
             }
         };
     }
